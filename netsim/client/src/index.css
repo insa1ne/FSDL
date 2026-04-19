@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #020817;
+    color: #e2e8f0;
+    margin: 0;
+  }
+}
+
+/* Dash animation for active edges in the simulator */
+@keyframes dash {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+/* ─── React Flow v12 dark-theme overrides ───────────────────────────────────
+   v12 uses CSS custom properties — override variables, NOT background directly.
+   ─────────────────────────────────────────────────────────────────────────── */
+.react-flow__controls {
+  --xy-controls-box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 2px;
+  gap: 2px;
+  display: flex;
+  flex-direction: column;
+}
+
+.react-flow__controls-button {
+  --xy-controls-button-background-color: #1e293b;
+  --xy-controls-button-background-color-hover: #334155;
+  --xy-controls-button-color: #94a3b8;
+  --xy-controls-button-color-hover: #e2e8f0;
+  --xy-controls-button-border-color: #334155;
+  border-radius: 7px !important;
+  border: none !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background 0.15s, color 0.15s !important;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor;
+  width: 14px;
+  height: 14px;
+}
+
+/* MiniMap dark theme */
+.react-flow__minimap {
+  background: #0f172a !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}

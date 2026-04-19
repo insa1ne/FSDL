@@ -1,0 +1,108 @@
+
+
+
+Tech Stack
+
+
+
+
+
+Phase 1 — Project Setup
+Do this on day one so nobody blocks each other.
+netsim/
+├── client/        ← Vite + React
+│   └── src/
+│       ├── pages/
+│       ├── components/
+│       ├── store/       ← Zustand
+│       ├── hooks/
+│       └── api/         ← Axios instance
+└── server/        ← Express
+    ├── routes/
+    ├── middleware/
+    └── prisma/
+Create a .env file at the root with DATABASE_URL, JWT_SECRET, and FRONTEND_URL. Add .env to .gitignore immediately. Commit a .env.example with placeholder values so teammates know what variables are needed. That's your credential security done — checklist item 11 ticked.
+
+Phase 2 — Backend
+Database schema (Prisma)
+Three models, nothing more:
+User — id, name, email, passwordHash, createdAt
+Topology — id, userId (FK), name, nodesJson, edgesJson, updatedAt
+ActivityLog — id, userId, action, timestamp
+nodesJson and edgesJson store the entire React Flow graph state as JSON strings. Simple and effective — no complex relational schema needed for a simulator.
+Auth routes /api/auth
+POST /register — validate inputs → bcrypt.hash(password, 10) → save user → return JWT
+POST /login — find user → bcrypt.compare() → sign JWT with 2h expiry → return token
+POST /logout — frontend just deletes the token from localStorage; no server work needed
+The JWT middleware is a single function: verify the token, attach req.user to the request, call next(). If the token is missing or invalid, return 401 Unauthorized with a generic message. Apply this middleware to every route except /api/auth/*.
+Topology routes /api/topologies (all protected)
+GET / — return only the logged-in user's saved topologies (use where: { userId: req.user.id } in Prisma — this is your access control)
+POST / — save current canvas state
+PUT /:id — update, but first check topology.userId === req.user.id
+DELETE /:id — same ownership check
+Error handler
+One global middleware at the bottom of app.js:
+app.use((err, req, res, next) => {
+  console.error(err.stack); // internal log only
+  res.status(500).json({ message: 'Something went wrong.' });
+});
+That single pattern covers checklist item 9 entirely. Internal details stay in the terminal, users see a clean message.
+Activity logging
+Just console.log with a timestamp after key actions — login, logout, topology saved. Three lines of code. For the demo you can show the terminal output as proof. No need for a logging library.
+console.log(`[${new Date().toISOString()}] User ${userId} logged in`);
+
+Phase 3 — Frontend Core Pages
+Landing page
+Structure it in three sections: a hero, a features overview, and a call-to-action. The hero should have a live looping mini-preview of the simulator running in the background — a Star topology with a packet animation cycling automatically, no user interaction needed. This immediately shows judges what the app does before they even read anything.
+For the hero background, grab the Spotlight effect from Aceternity UI — it's pure Framer Motion and Tailwind, adds zero bundle weight. For the feature cards, grab an animated hover card from uiverse.io. Keep the rest of the landing page clean and simple — don't pile on effects for the sake of it.
+Auth pages
+Centered card layout, clean form with React Hook Form. Zod schema validates email format and password minimum length on the client side before any API call happens — fast, snappy feedback. If the API returns an error, show it inline under the relevant field, not as a popup.
+Build a PrivateRoute wrapper component:
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  return token ? children : <Navigate to="/login" />;
+};
+Wrap the simulator and dashboard routes with this. That's your unauthorized access prevention done — checklist item 1 ticked.
+Dashboard
+Simple two-column layout — left sidebar with navigation links (Simulator, Subnet Calc, Saved Topologies, About), right content area. Show saved topologies as clickable cards. Clicking one loads its node/edge JSON directly into the simulator canvas.
+
+Phase 4 — The Simulator (Main Feature)
+Build this in layers, one at a time.
+4.1 Canvas setup
+Initialise React Flow with a dark background (bg-slate-900) and a subtle dot-grid pattern. Register three custom node types (PCNode, RouterNode, SwitchNode) and one custom edge type (SimulationEdge). React Flow handles all the drag, pan, zoom, and connection drawing — you just style the nodes.
+Each custom node is a small card: a hardware icon (use lucide-react), a label, and an IP address display below the label. Add a small colored circle in the top-right corner of each node — green for online, red for failed. Store all node and edge state in Zustand so the simulation engine can access it without prop drilling.
+4.2 Topology generators
+Three buttons in the toolbar: Bus, Star, Ring. Each one clears the canvas and hydrates Zustand with a preset layout. Calculate positions programmatically:
+Star — central switch at (400, 300), PCs placed around it using x = cx + r * cos(angle), y = cy + r * sin(angle) for n nodes.
+Ring — same trig, but edges connect each node to the next one, and the last node back to the first.
+Bus — nodes in a row at equal spacing, all connected in a chain left-to-right.
+After clicking any topology button, the canvas animates to fit all nodes in view using React Flow's fitView().
+4.3 Packet animation (the showstopper)
+This is the piece that will make jaws drop. Here's exactly how to build it:
+Step 1 — Pathfinding. When the user hits "Send Packet", run BFS from the source node to the destination node through the current edge list in Zustand. This gives you an ordered array of node IDs: [A, B, C, D].
+Step 2 — Coordinate lookup. Use React Flow's useNodes() hook to get the pixel position of each node on the canvas. Account for the current pan/zoom viewport transform using useViewport().
+Step 3 — Animate the packet. Render a <motion.div> positioned absolutely over the canvas. Use Framer Motion's animate prop with an array of x/y keyframes — one per node in the path — and set transition.duration based on the speed slider value. The packet looks like a small glowing dot with a label showing SRC → DST.
+Step 4 — Failed links. Before animating each hop, check if the edge between those two nodes has failed: true in Zustand. If it does, animate the packet to the midpoint of that edge, then trigger a shake animation, turn it red, and show a "Packet Lost" tooltip. Stop traversal there.
+Speed slider — three settings (Slow / Normal / Fast) that map to animation durations of 2s, 1s, 0.4s per hop respectively.
+4.4 Link failure simulation
+Build a custom edge component SimulationEdge. It renders the normal React Flow bezier path but with two extra behaviors. First, when data.active is true, it shows a subtle animated dash pattern flowing along the edge (CSS stroke-dashoffset animation) to imply data movement. Second, it has an onClick handler that dispatches a Zustand action to toggle failed on that edge. When failed: true, the edge turns red and the dash animation stops. Add a small label on the edge midpoint: "Link Down" in red.
+This is the feature that feels the most like a real network simulator — show it prominently in the demo.
+4.5 IP addressing
+A slide-out panel (right side drawer) triggered by an "IP Config" button in the toolbar. It renders a table listing every current node with an editable IP input field per row. An "Auto-assign" button takes a base address input like 192.168.1.0 and assigns IPs sequentially — the router gets .1, PCs get .2, .3, etc. Validate IP format with a simple regex before accepting. The assigned IPs update live on the node cards in the canvas.
+
+Phase 5 — Subnet Calculator
+A completely separate page. No API calls, everything runs in the browser.
+The user inputs an IP address and a prefix length (like /24). JavaScript bit manipulation gives you every derived value instantly — network address, broadcast address, usable host range, subnet mask, number of hosts.
+Display the results in a visual octet breakdown table where each of the four octets is colored differently, and the host/network boundary is shown with a vertical divider line. Add a "Split subnet" button that shows what you get if you increase the prefix by one bit — two child subnets. This extra touch demonstrates genuine understanding of subnetting and will stand out.
+All pure JS, zero latency, works even offline.
+
+Phase 6 — Security (The Actual Checklist, Simply)
+
+Phase 7 — About the Development Team Page
+Required by the document. Build it at /about, linked from the sidebar and footer.
+Layout: FCRIT logo and department header at the top. Below it, a 3–4 column grid of team member cards — each with a colored initials avatar, full name, and roll number. Mentor card below the grid. At the very bottom, the required attribution statement word for word:
+"This project was developed as part of the Full Stack Development Laboratory course at Fr. C. Rodrigues Institute of Technology, Vashi, Navi Mumbai, Department of Computer Engineering."
+Make the cards look polished — this page is also a portfolio artifact. Add a short "What we built" section with a one-paragraph description of the simulator and the tech stack used.
+
+Build Order
+The simulation runs entirely on the client — no API calls happen during packet animation. That's the key to making it feel instant and smooth regardless of network conditions. The backend only handles auth and saving topologies, so it can be minimal and it won't bottleneck anything.
