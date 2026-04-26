@@ -1,24 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { Network, Plus, Trash2, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import api from "../api/axios";
+import useSimulatorStore from '../store/useSimulatorStore';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
-  // Mock saved topologies
-  const [topologies, setTopologies] = useState([
-    { id: 1, name: 'Campus Data Center', type: 'Star', nodesCount: 5, date: '2 hours ago' },
-    { id: 2, name: 'Lab 204 Network', type: 'Bus', nodesCount: 8, date: 'Yesterday' },
-    { id: 3, name: 'Redundant Ring Test', type: 'Ring', nodesCount: 4, date: '3 days ago' },
-  ]);
 
-  const loadTopology = (id) => {
-    // In actual implementation, we'd fetch the JSON and set Zustand state here.
-    // For now we just route to simulator to pretend loading.
-    navigate('/simulator');
-  };
+  const [topologies, setTopologies] = useState([]);
 
+  const { setNodes, setEdges } = useSimulatorStore();
+
+  useEffect(() => {
+    const fetchTopologies = async () => {
+      try {
+        const res = await api.get("/topologies");
+        setTopologies(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchTopologies();
+  }, []);
+
+  // rest of your code...
+
+const loadTopology = async (id) => {
+  try {
+    const res = await api.get(`/topologies/${id}`);
+    const { nodesJson, edgesJson } = res.data;
+
+    localStorage.setItem("loadedTopology", JSON.stringify({
+      nodes: JSON.parse(nodesJson),
+      edges: JSON.parse(edgesJson),
+    }));
+
+    navigate("/simulator");
+  } catch (err) {
+    console.error(err);
+  }
+};
+const deleteTopology = async (id) => {
+  try {
+    await API.delete(`/topologies/${id}`);
+    setTopologies(prev => prev.filter(t => t.id !== id));
+  } catch (err) {
+    console.error(err);
+  }
+};
   return (
     <div className="flex bg-slate-950 min-h-screen">
       <Sidebar />
@@ -75,7 +106,7 @@ const DashboardPage = () => {
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        setTopologies(prev => prev.filter(p => p.id !== top.id));
+                        deleteTopology(top.id);
                       }}
                       className="text-slate-500 hover:text-red-400 transition-colors p-1"
                     >

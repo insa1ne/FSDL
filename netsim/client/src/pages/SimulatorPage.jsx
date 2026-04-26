@@ -18,6 +18,7 @@ import {
   Star, GripHorizontal, Circle, Zap, Settings,
   Info, Trash2, RotateCcw, Send, ChevronDown,
 } from 'lucide-react';
+import api from "../api/axios";
 
 const nodeTypes = { pc: PCNode, router: RouterNode, switch: SwitchNode };
 const edgeTypes = { simEdge: SimulationEdge };
@@ -159,6 +160,7 @@ const SimulatorCanvas = () => {
     setSelectedNode, selectedNodeId,
     addLog,
   } = useSimulatorStore();
+  const saveTopology = useSimulatorStore((state) => state.saveTopology);
 
   const { fitView, screenToFlowPosition } = useReactFlow();
   const reactFlowWrapper = useRef(null);
@@ -305,6 +307,31 @@ const SimulatorCanvas = () => {
         </div>
 
         <div style={{ width: 1, height: 24, background: '#1e293b' }} />
+        <button
+  onClick={() => saveTopology("My Network")}
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    padding: '5px 12px',
+    borderRadius: 6,
+    border: '1px solid #22c55e',
+    background: '#16a34a',
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.background = '#15803d';
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.background = '#16a34a';
+  }}
+>
+  Save
+</button>
 
         {/* Clear button */}
         <button onClick={clearCanvas}

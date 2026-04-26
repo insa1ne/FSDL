@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { ActivitySquare, Lock, Mail } from 'lucide-react';
+import API from "../api/api";
+import api from "../api/axios";
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -16,16 +18,17 @@ const LoginPage = () => {
     resolver: zodResolver(loginSchema)
   });
 
-  const onSubmit = async (data) => {
-    // Mock login since backend (Phase 2) is missing
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        localStorage.setItem('token', 'mock_jwt_token_12345');
-        navigate('/dashboard');
-        resolve();
-      }, 800);
-    });
-  };
+
+
+const onSubmit = async (data) => {
+  try {
+    const res = await api.post("/auth/login", data);
+    localStorage.setItem("token", res.data.token);
+    navigate("/dashboard");
+  } catch (err) {
+    alert(err.response?.data?.message || "Login failed");
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-slate-950 to-slate-950">

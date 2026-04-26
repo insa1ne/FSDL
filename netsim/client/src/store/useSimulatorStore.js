@@ -320,6 +320,33 @@ const useSimulatorStore = create((set, get) => ({
     set({ nodes: newNodes, edges: newEdges, selectedNodeId: null });
     get().addLog('success', 'Bus topology generated — 5 PCs in a chain.');
   },
+  saveTopology: async (name = "My Topology") => {
+  const { nodes, edges, addLog } = get();
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch("http://localhost:5000/api/topologies", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name,
+        nodesJson: JSON.stringify(nodes),
+        edgesJson: JSON.stringify(edges),
+      }),
+    });
+
+    if (!res.ok) throw new Error("Failed to save");
+
+    addLog("success", "Topology saved to database");
+  } catch (err) {
+    console.error(err);
+    addLog("error", "Error saving topology");
+  }
+},
 }));
 
 export default useSimulatorStore;
