@@ -154,7 +154,7 @@ const Row = ({ label, value, mono, small, valueColor }) => (
     </span>
     <span style={{
       fontSize: small ? 9 : 11,
-      color: valueColor || '#cbd5e1',
+      color: valueColor || 'var(--content-primary)',
       fontWeight: 600,
       fontFamily: mono ? 'monospace' : 'inherit',
       maxWidth: 130,

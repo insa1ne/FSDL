@@ -273,6 +273,8 @@ const useSimulatorStore = create((set, get) => ({
         id: 'e-' + pcId + '-switch-1',
         source: pcId,
         target: 'switch-1',
+        sourceHandle: 'bottom',
+        targetHandle: 'top-t',
         type: 'simEdge',
         data: { active: true, failed: false },
       });
@@ -308,6 +310,8 @@ const useSimulatorStore = create((set, get) => ({
         id: 'e-' + prevId + '-' + pcId,
         source: prevId,
         target: pcId,
+        sourceHandle: 'right',
+        targetHandle: 'left-t',
         type: 'simEdge',
         data: { active: true, failed: false },
       });
@@ -342,6 +346,8 @@ const useSimulatorStore = create((set, get) => ({
           id: 'e-' + prevId + '-' + pcId,
           source: prevId,
           target: pcId,
+          sourceHandle: 'right',
+          targetHandle: 'left-t',
           type: 'simEdge',
           data: { active: true, failed: false },
         });

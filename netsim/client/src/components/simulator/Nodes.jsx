@@ -2,19 +2,33 @@ import React from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Monitor, Router as RouterIcon, Box } from 'lucide-react';
 import useSimulatorStore from '../../store/useSimulatorStore';
+import useThemeStore from '../../store/useThemeStore';
 
-const typeColors = {
+// Colors adapt: dark theme keeps the vivid palette; light theme uses muted versions
+const typeColorsDark = {
   pc:     { bg: '#1e1b4b', border: '#4338ca', icon: '#818cf8', glow: 'rgba(99,102,241,0.4)'  },
   router: { bg: '#1c1107', border: '#92400e', icon: '#f59e0b', glow: 'rgba(245,158,11,0.35)' },
   switch: { bg: '#042f2e', border: '#065f5a', icon: '#2dd4bf', glow: 'rgba(20,184,166,0.35)' },
 };
+const typeColorsLight = {
+  pc:     { bg: '#eef2ff', border: '#6366f1', icon: '#4f46e5', glow: 'rgba(99,102,241,0.2)'  },
+  router: { bg: '#fffbeb', border: '#d97706', icon: '#b45309', glow: 'rgba(217,119,6,0.2)' },
+  switch: { bg: '#f0fdfa', border: '#0d9488', icon: '#0f766e', glow: 'rgba(20,184,166,0.2)' },
+};
+
+// Remove the static getColors helper — we use the reactive theme store inside the component instead.
 
 const typeIcons = { pc: Monitor, router: RouterIcon, switch: Box };
 
 const GenericNode = ({ id, data, type, selected }) => {
   const isFailed  = data.status === 'offline';
   const isSelected = selected;
-  const colors = typeColors[type] || typeColors.pc;
+
+  // Reactive: re-renders whenever theme toggles
+  const theme = useThemeStore((s) => s.theme);
+  const colorMap = theme === 'dark' ? typeColorsDark : typeColorsLight;
+  const colors = colorMap[type] || colorMap.pc;
+
   const Icon = typeIcons[type] || Monitor;
   const selectedNode = useSimulatorStore((s) => s.selectedNodeId);
   const setSelectedNode = useSimulatorStore((s) => s.setSelectedNode);
@@ -32,21 +46,25 @@ const GenericNode = ({ id, data, type, selected }) => {
         borderColor: isFailed ? '#7f1d1d' : isHighlighted ? '#a5b4fc' : colors.border,
         background: isFailed ? '#1c0606' : colors.bg,
         boxShadow: isHighlighted
-          ? '0 0 0 3px rgba(165,180,252,0.35), 0 4px 20px rgba(0,0,0,0.6)'
+          ? '0 0 0 3px rgba(165,180,252,0.35), 0 4px 20px rgba(0,0,0,0.3)'
           : isFailed
           ? '0 0 12px rgba(239,68,68,0.25)'
-          : '0 0 14px ' + colors.glow + ', 0 4px 12px rgba(0,0,0,0.5)',
+          : '0 0 14px ' + colors.glow + ', 0 4px 12px rgba(0,0,0,0.12)',
         minWidth: 120,
         cursor: 'pointer',
         transition: 'all 0.2s',
         userSelect: 'none',
       }}
     >
-      {/* All 4 handles */}
-      <Handle type="target" position={Position.Top}    style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', top: -5 }} />
-      <Handle type="source" position={Position.Bottom} style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', bottom: -5 }} />
-      <Handle type="source" position={Position.Left}   id="left"  style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', left: -5 }} />
-      <Handle type="source" position={Position.Right}  id="right" style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', right: -5 }} />
+      {/* All 4 handles — bidirectional so any port can connect to any other device */}
+      <Handle type="source" id="top"    position={Position.Top}    style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', top: -5 }} />
+      <Handle type="target" id="top-t"  position={Position.Top}    style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', top: -5, opacity: 0 }} />
+      <Handle type="source" id="bottom" position={Position.Bottom} style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', bottom: -5 }} />
+      <Handle type="target" id="bottom-t" position={Position.Bottom} style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', bottom: -5, opacity: 0 }} />
+      <Handle type="source" id="left"   position={Position.Left}   style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', left: -5 }} />
+      <Handle type="target" id="left-t" position={Position.Left}   style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', left: -5, opacity: 0 }} />
+      <Handle type="source" id="right"  position={Position.Right}  style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', right: -5 }} />
+      <Handle type="target" id="right-t" position={Position.Right}  style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', right: -5, opacity: 0 }} />
 
       {/* Status dot */}
       <div style={{
@@ -59,8 +77,8 @@ const GenericNode = ({ id, data, type, selected }) => {
       {/* Icon */}
       <div style={{
         width: 40, height: 40, borderRadius: 10,
-        background: isFailed ? '#450a0a' : 'rgba(255,255,255,0.06)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: isFailed ? '#450a0a' : 'var(--surface-hover)',
+        border: '1px solid var(--border-subtle)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         margin: '0 auto 8px auto',
         color: isFailed ? '#ef4444' : colors.icon,
@@ -77,8 +95,8 @@ const GenericNode = ({ id, data, type, selected }) => {
       {data.ip && (
         <div style={{
           textAlign: 'center', fontSize: 10, fontFamily: 'monospace',
-          color: 'var(--content-muted)', background: 'rgba(0,0,0,0.4)',
-          borderRadius: 4, padding: '1px 6px', border: '1px solid var(--surface-card)',
+          color: 'var(--content-muted)', background: 'var(--surface-hover)',
+          borderRadius: 4, padding: '1px 6px', border: '1px solid var(--border-default)',
         }}>
           {data.ip}
         </div>

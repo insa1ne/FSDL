@@ -13,8 +13,8 @@ const HeroNode = ({ data }) => (
       border: '1px solid',
       borderColor: data.type === 'switch' ? '#4338ca' : 'var(--border-default)',
       background: data.type === 'switch' ? '#1e1b4b' : 'var(--surface-card)',
-      color: data.type === 'switch' ? '#818cf8' : '#cbd5e1',
-      boxShadow: data.type === 'switch' ? '0 0 16px rgba(99,102,241,0.4)' : '0 2px 8px rgba(0,0,0,0.5)',
+      color: data.type === 'switch' ? '#818cf8' : 'var(--content-secondary)',
+      boxShadow: data.type === 'switch' ? '0 0 16px rgba(99,102,241,0.4)' : '0 2px 8px rgba(0,0,0,0.1)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -85,7 +85,7 @@ export default function HeroSimulator() {
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(to bottom, transparent 60%, rgba(2,8,23,0.85))',
+          background: 'linear-gradient(to bottom, transparent 60%, var(--surface-root))',
           zIndex: 10,
           pointerEvents: 'none',
         }}

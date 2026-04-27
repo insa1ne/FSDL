@@ -46,7 +46,7 @@ export default function IpConfigDrawer({ isOpen, onClose }) {
       </div>
 
       {/* Auto-assign */}
-      <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--surface-card)', background: 'rgba(30,41,59,0.3)' }}>
+      <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--surface-card)', background: 'var(--surface-card)' }}>
         <label style={lbl}>Auto-Assign Base Network</label>
         <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
           <input

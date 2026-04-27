@@ -176,7 +176,7 @@ const SubnetCalcPage = () => {
                   <div>
                     <div className="text-xs text-content-secondary uppercase tracking-widest font-bold">Usable Host Range</div>
                     <div className="text-lg font-mono text-cyan-400">
-                      {calc.hosts > 0 ? `\${calc.firstHost} - \${calc.lastHost}` : 'N/A'}
+                      {calc.hosts > 0 ? `${calc.firstHost} — ${calc.lastHost}` : 'N/A'}
                     </div>
                   </div>
                   <div>

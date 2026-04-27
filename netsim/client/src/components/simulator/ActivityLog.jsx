@@ -1,12 +1,26 @@
 import React, { useRef } from 'react';
 import { Trash2, X } from 'lucide-react';
 import useSimulatorStore from '../../store/useSimulatorStore';
+import useThemeStore from '../../store/useThemeStore';
 
 const logColors = {
+  info:    { dot: '#3b82f6', text: 'var(--content-secondary)', bg: 'transparent' },
+  success: { dot: '#22c55e', text: '#16a34a',                  bg: 'transparent' },
+  warning: { dot: '#f59e0b', text: '#b45309',                  bg: 'transparent' },
+  error:   { dot: '#ef4444', text: '#dc2626',                  bg: 'transparent' },
+};
+
+/* In dark mode the text colors are brighter */
+const logColorsDark = {
   info:    { dot: '#3b82f6', text: '#93c5fd', bg: 'transparent' },
   success: { dot: '#22c55e', text: '#86efac', bg: 'transparent' },
   warning: { dot: '#f59e0b', text: '#fcd34d', bg: 'transparent' },
   error:   { dot: '#ef4444', text: '#fca5a5', bg: 'transparent' },
+};
+
+const getLogColors = (type) => {
+  // deprecated static helper — replaced by reactive logic inside component
+  return logColors[type] || logColors.info;
 };
 
 const logPrefixes = {
@@ -19,6 +33,8 @@ const logPrefixes = {
 export default function ActivityLog({ height = 160 }) {
   const { activityLog, clearLog } = useSimulatorStore();
   const listRef = useRef(null);
+  const theme = useThemeStore((s) => s.theme);
+  const logColorMap = theme === 'dark' ? logColorsDark : logColors;
 
   return (
     <div style={{
@@ -72,7 +88,7 @@ export default function ActivityLog({ height = 160 }) {
           </div>
         ) : (
           activityLog.map((entry) => {
-            const c = logColors[entry.type] || logColors.info;
+            const c = logColorMap[entry.type] || logColorMap.info;
             return (
               <div
                 key={entry.id}

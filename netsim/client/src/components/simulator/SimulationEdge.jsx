@@ -1,6 +1,7 @@
 import React from 'react';
 import { getBezierPath, EdgeLabelRenderer, BaseEdge } from '@xyflow/react';
 import useSimulatorStore from '../../store/useSimulatorStore';
+import useThemeStore from '../../store/useThemeStore';
 
 export default function SimulationEdge({
   id,
@@ -24,6 +25,8 @@ export default function SimulationEdge({
   });
 
   const toggleEdgeFailure = useSimulatorStore((state) => state.toggleEdgeFailure);
+  const theme = useThemeStore((s) => s.theme);
+  const edgeBaseColor = theme === 'dark' ? '#475569' : '#94a3b8';
 
   const isFailed = data?.failed || false;
   const isActive = data?.active !== false && !isFailed;
@@ -37,7 +40,7 @@ export default function SimulationEdge({
         style={{
           ...style,
           strokeWidth: 3,
-          stroke: isFailed ? '#ef4444' : 'var(--border-default)',
+          stroke: isFailed ? '#ef4444' : edgeBaseColor,
         }}
         interactionWidth={20}
       />

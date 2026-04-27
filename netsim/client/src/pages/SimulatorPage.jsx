@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   ReactFlow, Background, ReactFlowProvider,
   useReactFlow, Controls, MiniMap,
-  ControlButton,
+  ControlButton, addEdge, reconnectEdge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import Sidebar from '../components/Sidebar';
@@ -15,6 +15,7 @@ import DevicePalette from '../components/simulator/DevicePalette';
 import NodePropertiesPanel from '../components/simulator/NodePropertiesPanel';
 import ActivityLog from '../components/simulator/ActivityLog';
 import api from '../api/axios';
+import useThemeStore from '../store/useThemeStore';
 import {
   Star, GripHorizontal, Circle, Zap, Settings,
   Info, Trash2, RotateCcw, Send, ChevronDown, Save,
@@ -233,6 +234,8 @@ const SimulatorCanvas = () => {
     setCurrentTopologyId, setCurrentTopologyName,
   } = useSimulatorStore();
 
+  const theme = useThemeStore((s) => s.theme);
+
   const { fitView, screenToFlowPosition } = useReactFlow();
   const reactFlowWrapper = useRef(null);
 
@@ -246,6 +249,7 @@ const SimulatorCanvas = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState(null);
   const [dragType, setDragType] = useState(null);
+  const edgeReconnectSuccessful = useRef(true);
 
   const showToast = useCallback((msg, type = 'info') => {
     setToast({ msg, type });
@@ -292,6 +296,27 @@ const SimulatorCanvas = () => {
     addNode(dragType, { x: position.x - 60, y: position.y - 40 });
     setDragType(null);
   }, [dragType, addNode, screenToFlowPosition]);
+
+  // ── Edge reconnection (drag existing edge to a new node) ──
+  const onReconnectStart = useCallback(() => {
+    edgeReconnectSuccessful.current = false;
+  }, []);
+
+  const onReconnect = useCallback((oldEdge, newConnection) => {
+    edgeReconnectSuccessful.current = true;
+    const { setEdges } = useSimulatorStore.getState();
+    setEdges(reconnectEdge(oldEdge, newConnection, useSimulatorStore.getState().edges));
+    addLog('success', 'Link reconnected: ' + newConnection.source + ' ↔ ' + newConnection.target);
+  }, [addLog]);
+
+  const onReconnectEnd = useCallback((_, edge) => {
+    if (!edgeReconnectSuccessful.current) {
+      // Dropped on empty space — remove the dangling edge
+      useSimulatorStore.getState().removeEdge(edge.id);
+      showToast('Link removed (dropped on empty space)', 'info');
+    }
+    edgeReconnectSuccessful.current = true;
+  }, [showToast]);
 
   // ── Topology generators ──
   const handleGenerate = (type) => {
@@ -566,8 +591,14 @@ const SimulatorCanvas = () => {
             deleteKeyCode={null}   // handled manually above
             connectionLineStyle={{ stroke: '#818cf8', strokeWidth: 2, strokeDasharray: '4 3' }}
             connectionLineType="bezier"
+            onReconnect={onReconnect}
+            onReconnectStart={onReconnectStart}
+            onReconnectEnd={onReconnectEnd}
           >
-            <Background color="#0d1f38" gap={22} size={1} />
+            <Background
+              color={theme === 'dark' ? '#0d1f38' : '#c8d5e8'}
+              gap={22} size={1}
+            />
             <Controls
               position="bottom-right"
               showInteractive={false}
