@@ -11,8 +11,8 @@ const HeroNode = ({ data }) => (
       padding: 12,
       borderRadius: 10,
       border: '1px solid',
-      borderColor: data.type === 'switch' ? '#4338ca' : '#334155',
-      background: data.type === 'switch' ? '#1e1b4b' : '#1e293b',
+      borderColor: data.type === 'switch' ? '#4338ca' : 'var(--border-default)',
+      background: data.type === 'switch' ? '#1e1b4b' : 'var(--surface-card)',
       color: data.type === 'switch' ? '#818cf8' : '#cbd5e1',
       boxShadow: data.type === 'switch' ? '0 0 16px rgba(99,102,241,0.4)' : '0 2px 8px rgba(0,0,0,0.5)',
       display: 'flex',
@@ -75,7 +75,7 @@ export default function HeroSimulator() {
         height: 400,
         borderRadius: 16,
         overflow: 'hidden',
-        border: '1px solid #1e293b',
+        border: '1px solid var(--surface-card)',
         boxShadow: '0 0 40px -15px rgba(79,70,229,0.4)',
         position: 'relative',
       }}
@@ -101,9 +101,9 @@ export default function HeroSimulator() {
         zoomOnPinch={false}
         zoomOnDoubleClick={false}
         proOptions={{ hideAttribution: true }}
-        style={{ background: '#020817' }}
+        style={{ background: 'var(--surface-root)' }}
       >
-        <Background color="#1e293b" gap={16} />
+        <Background color="var(--surface-card)" gap={16} />
       </ReactFlow>
 
       {/* Floating animated packet dot */}

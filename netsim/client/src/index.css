@@ -3,16 +3,55 @@
 
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
+  --color-surface-root: var(--surface-root);
+  --color-surface-panel: var(--surface-panel);
+  --color-surface-card: var(--surface-card);
+  --color-surface-hover: var(--surface-hover);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-content-primary: var(--content-primary);
+  --color-content-secondary: var(--content-secondary);
+  --color-content-muted: var(--content-muted);
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-hover: var(--accent-hover);
 }
 
 @layer base {
+  :root {
+    --surface-root: #f8fafc;
+    --surface-panel: #ffffff;
+    --surface-card: #f1f5f9;
+    --surface-hover: #e2e8f0;
+    --border-subtle: #e2e8f0;
+    --border-default: #cbd5e1;
+    --content-primary: #0f172a;
+    --content-secondary: #475569;
+    --content-muted: #64748b;
+    --accent-primary: #4f46e5;
+    --accent-hover: #4338ca;
+  }
+  
+  .dark {
+    --surface-root: #020817;
+    --surface-panel: #0f172a;
+    --surface-card: #1e293b;
+    --surface-hover: #334155;
+    --border-subtle: #1e293b;
+    --border-default: #334155;
+    --content-primary: #e2e8f0;
+    --content-secondary: #94a3b8;
+    --content-muted: #64748b;
+    --accent-primary: #4f46e5;
+    --accent-hover: #4338ca;
+  }
+
   * {
     box-sizing: border-box;
   }
   body {
     font-family: 'Inter', system-ui, sans-serif;
-    background: #020817;
-    color: #e2e8f0;
+    background: var(--surface-root);
+    color: var(--content-primary);
     margin: 0;
   }
 }
@@ -24,13 +63,11 @@
   }
 }
 
-/* ─── React Flow v12 dark-theme overrides ───────────────────────────────────
-   v12 uses CSS custom properties — override variables, NOT background directly.
-   ─────────────────────────────────────────────────────────────────────────── */
+/* ─── React Flow Theme Overrides ─────────────────────────────────────────── */
 .react-flow__controls {
-  --xy-controls-box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  background: #0f172a;
-  border: 1px solid #1e293b;
+  --xy-controls-box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  background: var(--surface-panel);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   overflow: hidden;
   padding: 2px;
@@ -39,12 +76,16 @@
   flex-direction: column;
 }
 
+.dark .react-flow__controls {
+  --xy-controls-box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
 .react-flow__controls-button {
-  --xy-controls-button-background-color: #1e293b;
-  --xy-controls-button-background-color-hover: #334155;
-  --xy-controls-button-color: #94a3b8;
-  --xy-controls-button-color-hover: #e2e8f0;
-  --xy-controls-button-border-color: #334155;
+  --xy-controls-button-background-color: var(--surface-card);
+  --xy-controls-button-background-color-hover: var(--surface-hover);
+  --xy-controls-button-color: var(--content-secondary);
+  --xy-controls-button-color-hover: var(--content-primary);
+  --xy-controls-button-border-color: var(--border-default);
   border-radius: 7px !important;
   border: none !important;
   width: 28px !important;
@@ -65,10 +106,10 @@
   height: 14px;
 }
 
-/* MiniMap dark theme */
+/* MiniMap theme */
 .react-flow__minimap {
-  background: #0f172a !important;
-  border: 1px solid #1e293b !important;
+  background: var(--surface-panel) !important;
+  border: 1px solid var(--border-subtle) !important;
   border-radius: 10px !important;
   overflow: hidden !important;
 }

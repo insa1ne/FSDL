@@ -42,11 +42,11 @@ const EmptyState = () => (
     <div style={{ textAlign: 'center' }}>
       <div style={{
         width: 64, height: 64, borderRadius: 16,
-        background: '#1e293b', border: '1px solid #334155',
+        background: 'var(--surface-card)', border: '1px solid var(--border-default)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         margin: '0 auto 16px',
       }}>
-        <svg width="28" height="28" fill="none" stroke="#475569" strokeWidth={2} viewBox="0 0 24 24">
+        <svg width="28" height="28" fill="none" stroke="var(--content-muted)" strokeWidth={2} viewBox="0 0 24 24">
           <rect x="16" y="16" width="6" height="6" rx="1" />
           <rect x="2" y="16" width="6" height="6" rx="1" />
           <rect x="9" y="2" width="6" height="6" rx="1" />
@@ -54,8 +54,8 @@ const EmptyState = () => (
           <path d="M12 12V8" />
         </svg>
       </div>
-      <p style={{ color: '#475569', fontSize: 16, fontWeight: 600, margin: '0 0 8px' }}>Canvas is empty</p>
-      <p style={{ color: '#334155', fontSize: 13, maxWidth: 260 }}>
+      <p style={{ color: 'var(--content-muted)', fontSize: 16, fontWeight: 600, margin: '0 0 8px' }}>Canvas is empty</p>
+      <p style={{ color: 'var(--border-default)', fontSize: 13, maxWidth: 260 }}>
         Drag a device from the left panel, or click{' '}
         <span style={{ color: '#818cf8' }}>Star</span>,{' '}
         <span style={{ color: '#22d3ee' }}>Ring</span>, or{' '}
@@ -77,8 +77,8 @@ function PacketSendModal({ nodes, onSend, onClose }) {
   };
 
   const selStyle = {
-    width: '100%', background: '#020817', border: '1px solid #334155',
-    borderRadius: 6, padding: '6px 10px', color: '#e2e8f0', fontSize: 12,
+    width: '100%', background: 'var(--surface-root)', border: '1px solid var(--border-default)',
+    borderRadius: 6, padding: '6px 10px', color: 'var(--content-primary)', fontSize: 12,
     outline: 'none', cursor: 'pointer',
   };
 
@@ -89,14 +89,14 @@ function PacketSendModal({ nodes, onSend, onClose }) {
       zIndex: 200,
     }}>
       <div style={{
-        background: '#0f172a', border: '1px solid #1e293b',
+        background: 'var(--surface-panel)', border: '1px solid var(--surface-card)',
         borderRadius: 16, padding: 24, width: 320,
         boxShadow: '0 24px 64px rgba(0,0,0,0.8)',
       }}>
-        <h3 style={{ color: '#e2e8f0', fontSize: 16, fontWeight: 700, margin: '0 0 4px' }}>
+        <h3 style={{ color: 'var(--content-primary)', fontSize: 16, fontWeight: 700, margin: '0 0 4px' }}>
           Send Packet (Ping)
         </h3>
-        <p style={{ color: '#475569', fontSize: 12, margin: '0 0 20px' }}>
+        <p style={{ color: 'var(--content-muted)', fontSize: 12, margin: '0 0 20px' }}>
           Select source and destination devices
         </p>
 
@@ -125,7 +125,7 @@ function PacketSendModal({ nodes, onSend, onClose }) {
             onClick={send}
             disabled={!src || !dst}
             style={{
-              flex: 1, padding: '8px 0', background: '#4f46e5', color: '#fff',
+              flex: 1, padding: '8px 0', background: 'var(--accent-primary)', color: '#fff',
               border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13,
               cursor: src && dst ? 'pointer' : 'not-allowed',
               opacity: src && dst ? 1 : 0.5,
@@ -136,8 +136,8 @@ function PacketSendModal({ nodes, onSend, onClose }) {
           <button
             onClick={onClose}
             style={{
-              padding: '8px 16px', background: '#1e293b', color: '#94a3b8',
-              border: '1px solid #334155', borderRadius: 8, fontSize: 13, cursor: 'pointer',
+              padding: '8px 16px', background: 'var(--surface-card)', color: 'var(--content-secondary)',
+              border: '1px solid var(--border-default)', borderRadius: 8, fontSize: 13, cursor: 'pointer',
             }}
           >
             Cancel
@@ -148,7 +148,7 @@ function PacketSendModal({ nodes, onSend, onClose }) {
   );
 }
 
-const labelSt = { display: 'block', fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 };
+const labelSt = { display: 'block', fontSize: 11, color: 'var(--content-muted)', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 };
 
 // ─── Save Topology Modal ──────────────────────────────────────────────────────
 function SaveTopologyModal({ defaultName, onSave, onClose }) {
@@ -167,14 +167,14 @@ function SaveTopologyModal({ defaultName, onSave, onClose }) {
       zIndex: 200,
     }}>
       <div style={{
-        background: '#0f172a', border: '1px solid #1e293b',
+        background: 'var(--surface-panel)', border: '1px solid var(--surface-card)',
         borderRadius: 16, padding: 24, width: 340,
         boxShadow: '0 24px 64px rgba(0,0,0,0.8)',
       }}>
-        <h3 style={{ color: '#e2e8f0', fontSize: 16, fontWeight: 700, margin: '0 0 4px' }}>
+        <h3 style={{ color: 'var(--content-primary)', fontSize: 16, fontWeight: 700, margin: '0 0 4px' }}>
           Save Topology
         </h3>
-        <p style={{ color: '#475569', fontSize: 12, margin: '0 0 20px' }}>
+        <p style={{ color: 'var(--content-muted)', fontSize: 12, margin: '0 0 20px' }}>
           Give your network topology a name
         </p>
 
@@ -184,8 +184,8 @@ function SaveTopologyModal({ defaultName, onSave, onClose }) {
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Campus Network v2"
           style={{
-            width: '100%', background: '#020817', border: '1px solid #334155',
-            borderRadius: 6, padding: '8px 10px', color: '#e2e8f0', fontSize: 13,
+            width: '100%', background: 'var(--surface-root)', border: '1px solid var(--border-default)',
+            borderRadius: 6, padding: '8px 10px', color: 'var(--content-primary)', fontSize: 13,
             outline: 'none', boxSizing: 'border-box',
           }}
           autoFocus
@@ -208,8 +208,8 @@ function SaveTopologyModal({ defaultName, onSave, onClose }) {
           <button
             onClick={onClose}
             style={{
-              padding: '8px 16px', background: '#1e293b', color: '#94a3b8',
-              border: '1px solid #334155', borderRadius: 8, fontSize: 13, cursor: 'pointer',
+              padding: '8px 16px', background: 'var(--surface-card)', color: 'var(--content-secondary)',
+              border: '1px solid var(--border-default)', borderRadius: 8, fontSize: 13, cursor: 'pointer',
             }}
           >
             Cancel
@@ -394,12 +394,12 @@ const SimulatorCanvas = () => {
 
       {/* ── Top Toolbar ── */}
       <div style={{
-        height: 56, background: '#0f172a', borderBottom: '1px solid #1e293b',
+        height: 56, background: 'var(--surface-panel)', borderBottom: '1px solid var(--surface-card)',
         display: 'flex', alignItems: 'center', padding: '0 16px', gap: 12,
         position: 'relative', zIndex: 10, flexShrink: 0,
       }}>
         {/* Topology presets */}
-        <div style={{ display: 'flex', gap: 2, background: '#1e293b', borderRadius: 8, padding: 3, border: '1px solid #334155' }}>
+        <div style={{ display: 'flex', gap: 2, background: 'var(--surface-card)', borderRadius: 8, padding: 3, border: '1px solid var(--border-default)' }}>
           {[
             { id: 'star', label: 'Star', color: '#818cf8', Icon: Star },
             { id: 'ring', label: 'Ring', color: '#22d3ee', Icon: Circle },
@@ -410,11 +410,11 @@ const SimulatorCanvas = () => {
               style={{
                 display: 'flex', alignItems: 'center', gap: 5,
                 padding: '4px 10px', borderRadius: 6, border: 'none',
-                background: 'transparent', color: '#94a3b8', fontSize: 12, fontWeight: 600,
+                background: 'transparent', color: 'var(--content-secondary)', fontSize: 12, fontWeight: 600,
                 cursor: 'pointer', transition: 'all 0.15s',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#334155'; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--border-default)'; e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--content-secondary)'; }}
             >
               <Icon size={13} color={color} />
               {label}
@@ -422,7 +422,7 @@ const SimulatorCanvas = () => {
           ))}
         </div>
 
-        <div style={{ width: 1, height: 24, background: '#1e293b' }} />
+        <div style={{ width: 1, height: 24, background: 'var(--surface-card)' }} />
 
         {/* Clear button */}
         <button onClick={clearCanvas}
@@ -430,11 +430,11 @@ const SimulatorCanvas = () => {
           style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '5px 10px', borderRadius: 7,
-            background: '#1e293b', border: '1px solid #334155',
-            color: '#94a3b8', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            background: 'var(--surface-card)', border: '1px solid var(--border-default)',
+            color: 'var(--content-secondary)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = '#7f1d1d'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.borderColor = '#334155'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--content-secondary)'; e.currentTarget.style.borderColor = 'var(--border-default)'; }}
         >
           <Trash2 size={13} /> Clear
         </button>
@@ -443,13 +443,13 @@ const SimulatorCanvas = () => {
 
         {/* Speed picker */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 11, color: '#475569', fontWeight: 600 }}>Speed</span>
-          <div style={{ display: 'flex', background: '#1e293b', border: '1px solid #334155', borderRadius: 7, overflow: 'hidden' }}>
+          <span style={{ fontSize: 11, color: 'var(--content-muted)', fontWeight: 600 }}>Speed</span>
+          <div style={{ display: 'flex', background: 'var(--surface-card)', border: '1px solid var(--border-default)', borderRadius: 7, overflow: 'hidden' }}>
             {['slow', 'normal', 'fast'].map((s) => (
               <button key={s} onClick={() => setSpeed(s)} style={{
                 padding: '4px 9px',
-                background: speed === s ? '#4f46e5' : 'transparent',
-                color: speed === s ? '#fff' : '#64748b',
+                background: speed === s ? 'var(--accent-primary)' : 'transparent',
+                color: speed === s ? '#fff' : 'var(--content-muted)',
                 border: 'none', fontSize: 11, fontWeight: 600,
                 cursor: 'pointer', textTransform: 'capitalize',
               }}>
@@ -465,7 +465,7 @@ const SimulatorCanvas = () => {
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
             padding: '6px 14px', borderRadius: 8,
-            background: isAnimating ? '#312e81' : '#4f46e5',
+            background: isAnimating ? '#312e81' : 'var(--accent-primary)',
             color: '#fff', border: 'none', fontSize: 12, fontWeight: 700,
             cursor: isAnimating ? 'default' : 'pointer',
             boxShadow: '0 0 14px rgba(79,70,229,0.4)',
@@ -503,8 +503,8 @@ const SimulatorCanvas = () => {
           style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '5px 10px', borderRadius: 7,
-            background: '#1e293b', border: '1px solid #334155',
-            color: '#94a3b8', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            background: 'var(--surface-card)', border: '1px solid var(--border-default)',
+            color: 'var(--content-secondary)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
           }}>
           <Settings size={13} /> IP Config
         </button>
@@ -513,8 +513,8 @@ const SimulatorCanvas = () => {
           title="Fit to view"
           style={{
             padding: '5px 8px', borderRadius: 7,
-            background: '#1e293b', border: '1px solid #334155',
-            color: '#64748b', cursor: 'pointer', display: 'flex',
+            background: 'var(--surface-card)', border: '1px solid var(--border-default)',
+            color: 'var(--content-muted)', cursor: 'pointer', display: 'flex',
           }}>
           <RotateCcw size={13} />
         </button>
@@ -523,16 +523,16 @@ const SimulatorCanvas = () => {
       {/* ── Hint strip ── */}
       {nodes.length > 0 && (
         <div style={{
-          padding: '4px 16px', background: '#0a1628', borderBottom: '1px solid #1e293b',
-          display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#334155', flexShrink: 0,
+          padding: '4px 16px', background: 'var(--surface-panel)', borderBottom: '1px solid var(--surface-card)',
+          display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--border-default)', flexShrink: 0,
         }}>
-          <Info size={11} color="#475569" />
+          <Info size={11} color="var(--content-muted)" />
           <span>
-            <b style={{ color: '#475569' }}>{nodes.length}</b> devices &nbsp;·&nbsp;
-            <b style={{ color: '#475569' }}>{edges.length}</b> links &nbsp;·&nbsp;
+            <b style={{ color: 'var(--content-muted)' }}>{nodes.length}</b> devices &nbsp;·&nbsp;
+            <b style={{ color: 'var(--content-muted)' }}>{edges.length}</b> links &nbsp;·&nbsp;
             Click an edge to toggle link failure &nbsp;·&nbsp;
             Click a node to inspect &nbsp;·&nbsp;
-            <span style={{ color: '#334155' }}>Delete key removes selected device</span>
+            <span style={{ color: 'var(--border-default)' }}>Delete key removes selected device</span>
           </span>
         </div>
       )}
@@ -561,7 +561,7 @@ const SimulatorCanvas = () => {
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             proOptions={{ hideAttribution: true }}
-            style={{ background: '#020817' }}
+            style={{ background: 'var(--surface-root)' }}
             fitViewOptions={{ padding: 0.2 }}
             deleteKeyCode={null}   // handled manually above
             connectionLineStyle={{ stroke: '#818cf8', strokeWidth: 2, strokeDasharray: '4 3' }}
@@ -613,7 +613,7 @@ const SimulatorCanvas = () => {
 
 export default function SimulatorPage() {
   return (
-    <div style={{ display: 'flex', background: '#020817', minHeight: '100vh', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', background: 'var(--surface-root)', minHeight: '100vh', overflow: 'hidden' }}>
       <Sidebar />
       <ReactFlowProvider>
         <SimulatorCanvas />

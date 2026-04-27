@@ -282,11 +282,11 @@ export default function PacketAnimator({ speed, src, dst, onComplete }) {
         left: '50%',
         transform: 'translateX(-50%)',
         background: 'rgba(15,23,42,0.92)',
-        border: '1px solid #334155',
+        border: '1px solid var(--border-default)',
         borderRadius: 8,
         padding: '5px 14px',
         fontSize: 11,
-        color: '#94a3b8',
+        color: 'var(--content-secondary)',
         fontFamily: 'monospace',
         boxShadow: '0 2px 12px rgba(0,0,0,0.5)',
         whiteSpace: 'nowrap',
@@ -298,7 +298,7 @@ export default function PacketAnimator({ speed, src, dst, onComplete }) {
         <span style={{ color: '#4ade80' }}>
           {animState.dstNode.data.ip || animState.dstNode.data.label}
         </span>
-        <span style={{ color: '#475569', marginLeft: 8 }}>
+        <span style={{ color: 'var(--content-muted)', marginLeft: 8 }}>
           ({animState.hops} hop{animState.hops !== 1 ? 's' : ''})
         </span>
       </div>

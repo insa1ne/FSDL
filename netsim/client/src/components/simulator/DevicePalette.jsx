@@ -11,8 +11,8 @@ export default function DevicePalette({ onDragStart }) {
   return (
     <div style={{
       width: 80,
-      background: '#0f172a',
-      borderRight: '1px solid #1e293b',
+      background: 'var(--surface-panel)',
+      borderRight: '1px solid var(--surface-card)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -21,7 +21,7 @@ export default function DevicePalette({ onDragStart }) {
       flexShrink: 0,
       zIndex: 20,
     }}>
-      <div style={{ fontSize: 9, color: '#475569', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, paddingLeft: 4, paddingRight: 4, textAlign: 'center' }}>
+      <div style={{ fontSize: 9, color: 'var(--content-muted)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8, paddingLeft: 4, paddingRight: 4, textAlign: 'center' }}>
         Devices
       </div>
 
@@ -35,8 +35,8 @@ export default function DevicePalette({ onDragStart }) {
             width: 60,
             padding: '10px 6px',
             borderRadius: 10,
-            border: '1px solid #1e293b',
-            background: '#1e293b',
+            border: '1px solid var(--surface-card)',
+            background: 'var(--surface-card)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -47,27 +47,27 @@ export default function DevicePalette({ onDragStart }) {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = color;
-            e.currentTarget.style.background = '#1e293b';
+            e.currentTarget.style.background = 'var(--surface-card)';
             e.currentTarget.style.boxShadow = '0 0 12px ' + color + '44';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = '#1e293b';
-            e.currentTarget.style.background = '#1e293b';
+            e.currentTarget.style.borderColor = 'var(--surface-card)';
+            e.currentTarget.style.background = 'var(--surface-card)';
             e.currentTarget.style.boxShadow = 'none';
           }}
         >
           <Icon size={20} color={color} />
-          <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600 }}>{label}</span>
+          <span style={{ fontSize: 10, color: 'var(--content-secondary)', fontWeight: 600 }}>{label}</span>
         </div>
       ))}
 
       <div style={{ flex: 1 }} />
 
-      <div style={{ borderTop: '1px solid #1e293b', paddingTop: 8, textAlign: 'center', paddingLeft: 4, paddingRight: 4 }}>
-        <div style={{ fontSize: 9, color: '#334155', marginBottom: 4 }}>
+      <div style={{ borderTop: '1px solid var(--surface-card)', paddingTop: 8, textAlign: 'center', paddingLeft: 4, paddingRight: 4 }}>
+        <div style={{ fontSize: 9, color: 'var(--border-default)', marginBottom: 4 }}>
           Drag to add
         </div>
-        <MousePointer size={14} color="#334155" />
+        <MousePointer size={14} color="var(--border-default)" />
       </div>
     </div>
   );

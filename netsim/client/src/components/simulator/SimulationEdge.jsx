@@ -37,7 +37,7 @@ export default function SimulationEdge({
         style={{
           ...style,
           strokeWidth: 3,
-          stroke: isFailed ? '#ef4444' : '#334155',
+          stroke: isFailed ? '#ef4444' : 'var(--border-default)',
         }}
         interactionWidth={20}
       />

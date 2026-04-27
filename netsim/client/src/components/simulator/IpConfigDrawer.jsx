@@ -27,7 +27,7 @@ export default function IpConfigDrawer({ isOpen, onClose }) {
   return (
     <div style={{
       position: 'absolute', top: 0, right: 0, height: '100%', width: 280,
-      background: '#0f172a', borderLeft: '1px solid #1e293b',
+      background: 'var(--surface-panel)', borderLeft: '1px solid var(--surface-card)',
       boxShadow: '-4px 0 30px rgba(0,0,0,0.6)',
       display: 'flex', flexDirection: 'column', zIndex: 50,
     }}>
@@ -35,18 +35,18 @@ export default function IpConfigDrawer({ isOpen, onClose }) {
       <div style={{
         padding: '12px 14px', display: 'flex',
         alignItems: 'center', justifyContent: 'space-between',
-        background: '#1e293b', borderBottom: '1px solid #334155',
+        background: 'var(--surface-card)', borderBottom: '1px solid var(--border-default)',
       }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0' }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--content-primary)' }}>
           IP Configuration
         </span>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--content-muted)' }}>
           <X size={16} />
         </button>
       </div>
 
       {/* Auto-assign */}
-      <div style={{ padding: '12px 14px', borderBottom: '1px solid #1e293b', background: 'rgba(30,41,59,0.3)' }}>
+      <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--surface-card)', background: 'rgba(30,41,59,0.3)' }}>
         <label style={lbl}>Auto-Assign Base Network</label>
         <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
           <input
@@ -57,7 +57,7 @@ export default function IpConfigDrawer({ isOpen, onClose }) {
             style={inp}
           />
           <button onClick={handleAutoAssign} style={{
-            background: '#4f46e5', color: '#fff', border: 'none',
+            background: 'var(--accent-primary)', color: '#fff', border: 'none',
             borderRadius: 6, padding: '5px 10px', cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600,
           }}>
@@ -66,7 +66,7 @@ export default function IpConfigDrawer({ isOpen, onClose }) {
         </div>
         {errorMsg && <p style={{ fontSize: 11, color: '#f87171', margin: '4px 0 0' }}>{errorMsg}</p>}
         {successMsg && <p style={{ fontSize: 11, color: '#4ade80', margin: '4px 0 0' }}>✓ {successMsg}</p>}
-        <p style={{ fontSize: 10, color: '#334155', margin: '6px 0 0' }}>
+        <p style={{ fontSize: 10, color: 'var(--border-default)', margin: '6px 0 0' }}>
           First device gets .1, second .2, etc.
         </p>
       </div>
@@ -75,7 +75,7 @@ export default function IpConfigDrawer({ isOpen, onClose }) {
       <div style={{ flex: 1, overflowY: 'auto', padding: 14 }}>
         <label style={{ ...lbl, marginBottom: 10 }}>Manual IP Assignment</label>
         {nodes.length === 0 ? (
-          <p style={{ fontSize: 12, color: '#334155', fontStyle: 'italic' }}>
+          <p style={{ fontSize: 12, color: 'var(--border-default)', fontStyle: 'italic' }}>
             No devices on canvas.
           </p>
         ) : (
@@ -126,9 +126,9 @@ function NodeIpRow({ node }) {
 
   return (
     <div>
-      <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 3 }}>
+      <div style={{ fontSize: 11, color: 'var(--content-muted)', fontWeight: 600, marginBottom: 3 }}>
         {node.data.label}
-        <span style={{ color: '#334155', fontWeight: 400 }}> — {node.type}</span>
+        <span style={{ color: 'var(--border-default)', fontWeight: 400 }}> — {node.type}</span>
       </div>
       <input
         type="text"
@@ -137,15 +137,15 @@ function NodeIpRow({ node }) {
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         placeholder="e.g. 192.168.1.1"
-        style={{ ...inp, fontFamily: 'monospace', borderColor: err ? '#f87171' : '#334155' }}
+        style={{ ...inp, fontFamily: 'monospace', borderColor: err ? '#f87171' : 'var(--border-default)' }}
       />
     </div>
   );
 }
 
-const lbl = { display: 'block', fontSize: 10, color: '#475569', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 };
+const lbl = { display: 'block', fontSize: 10, color: 'var(--content-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 };
 const inp = {
-  width: '100%', background: '#020817', border: '1px solid #334155',
-  borderRadius: 6, padding: '5px 8px', fontSize: 12, color: '#e2e8f0',
+  width: '100%', background: 'var(--surface-root)', border: '1px solid var(--border-default)',
+  borderRadius: 6, padding: '5px 8px', fontSize: 12, color: 'var(--content-primary)',
   outline: 'none', boxSizing: 'border-box',
 };

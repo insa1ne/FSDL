@@ -58,8 +58,8 @@ export default function NodePropertiesPanel() {
       top: 8,
       right: 8,
       width: 240,
-      background: '#0f172a',
-      border: '1px solid #1e293b',
+      background: 'var(--surface-panel)',
+      border: '1px solid var(--surface-card)',
       borderRadius: 14,
       boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
       zIndex: 60,
@@ -68,21 +68,21 @@ export default function NodePropertiesPanel() {
       {/* Header */}
       <div style={{
         padding: '10px 14px',
-        background: '#1e293b',
+        background: 'var(--surface-card)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        borderBottom: '1px solid #334155',
+        borderBottom: '1px solid var(--border-default)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Icon size={16} color={color} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0' }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--content-primary)' }}>
             {typeLabel}
           </span>
         </div>
         <button
           onClick={() => setSelectedNode(null)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: 2 }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--content-muted)', padding: 2 }}
         >
           <X size={14} />
         </button>
@@ -113,7 +113,7 @@ export default function NodePropertiesPanel() {
               <button onClick={saveEdit} style={btnStyle('#16a34a', '#052e16')}>
                 <CheckCircle size={12} /> Save
               </button>
-              <button onClick={() => setEditing(false)} style={btnStyle('#475569', '#1e293b')}>
+              <button onClick={() => setEditing(false)} style={btnStyle('var(--content-muted)', 'var(--surface-card)')}>
                 Cancel
               </button>
             </div>
@@ -127,7 +127,7 @@ export default function NodePropertiesPanel() {
             <Row label="Node ID" value={node.id} mono small />
 
             <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
-              <button onClick={startEdit} style={btnStyle('#4f46e5', '#1e1b4b')}>
+              <button onClick={startEdit} style={btnStyle('var(--accent-primary)', '#1e1b4b')}>
                 Edit
               </button>
               <button onClick={toggleStatus} style={isOffline ? btnStyle('#16a34a', '#052e16') : btnStyle('#7f1d1d', '#450a0a')}>
@@ -149,7 +149,7 @@ export default function NodePropertiesPanel() {
 
 const Row = ({ label, value, mono, small, valueColor }) => (
   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-    <span style={{ fontSize: 10, color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+    <span style={{ fontSize: 10, color: 'var(--content-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
       {label}
     </span>
     <span style={{
@@ -167,16 +167,16 @@ const Row = ({ label, value, mono, small, valueColor }) => (
   </div>
 );
 
-const labelStyle = { display: 'block', fontSize: 10, color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 };
+const labelStyle = { display: 'block', fontSize: 10, color: 'var(--content-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 };
 
 const inputStyle = {
   width: '100%',
-  background: '#020817',
-  border: '1px solid #334155',
+  background: 'var(--surface-root)',
+  border: '1px solid var(--border-default)',
   borderRadius: 6,
   padding: '5px 8px',
   fontSize: 12,
-  color: '#e2e8f0',
+  color: 'var(--content-primary)',
   outline: 'none',
   boxSizing: 'border-box',
 };
@@ -184,7 +184,7 @@ const inputStyle = {
 const btnStyle = (border, bg) => ({
   display: 'flex', alignItems: 'center', gap: 4,
   background: bg, border: '1px solid ' + border,
-  color: '#e2e8f0', borderRadius: 6,
+  color: 'var(--content-primary)', borderRadius: 6,
   padding: '4px 10px', fontSize: 11, fontWeight: 600,
   cursor: 'pointer', transition: 'all 0.15s',
 });

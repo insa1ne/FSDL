@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -7,8 +8,15 @@ import SimulatorPage from './pages/SimulatorPage';
 import SubnetCalcPage from './pages/SubnetCalcPage';
 import AboutPage from './pages/AboutPage';
 import PrivateRoute from './components/PrivateRoute';
+import useThemeStore from './store/useThemeStore';
 
 function App() {
+  const initTheme = useThemeStore((state) => state.initTheme);
+
+  useEffect(() => {
+    initTheme();
+  }, [initTheme]);
+
   return (
     <Router>
       <Routes>

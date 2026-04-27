@@ -43,10 +43,10 @@ const GenericNode = ({ id, data, type, selected }) => {
       }}
     >
       {/* All 4 handles */}
-      <Handle type="target" position={Position.Top}    style={{ width: 10, height: 10, background: '#334155', border: '2px solid #475569', top: -5 }} />
-      <Handle type="source" position={Position.Bottom} style={{ width: 10, height: 10, background: '#334155', border: '2px solid #475569', bottom: -5 }} />
-      <Handle type="source" position={Position.Left}   id="left"  style={{ width: 10, height: 10, background: '#334155', border: '2px solid #475569', left: -5 }} />
-      <Handle type="source" position={Position.Right}  id="right" style={{ width: 10, height: 10, background: '#334155', border: '2px solid #475569', right: -5 }} />
+      <Handle type="target" position={Position.Top}    style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', top: -5 }} />
+      <Handle type="source" position={Position.Bottom} style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', bottom: -5 }} />
+      <Handle type="source" position={Position.Left}   id="left"  style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', left: -5 }} />
+      <Handle type="source" position={Position.Right}  id="right" style={{ width: 10, height: 10, background: 'var(--border-default)', border: '2px solid var(--content-muted)', right: -5 }} />
 
       {/* Status dot */}
       <div style={{
@@ -69,7 +69,7 @@ const GenericNode = ({ id, data, type, selected }) => {
       </div>
 
       {/* Label */}
-      <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 4 }}>
+      <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: 'var(--content-primary)', marginBottom: 4 }}>
         {data.label}
       </div>
 
@@ -77,8 +77,8 @@ const GenericNode = ({ id, data, type, selected }) => {
       {data.ip && (
         <div style={{
           textAlign: 'center', fontSize: 10, fontFamily: 'monospace',
-          color: '#64748b', background: 'rgba(0,0,0,0.4)',
-          borderRadius: 4, padding: '1px 6px', border: '1px solid #1e293b',
+          color: 'var(--content-muted)', background: 'rgba(0,0,0,0.4)',
+          borderRadius: 4, padding: '1px 6px', border: '1px solid var(--surface-card)',
         }}>
           {data.ip}
         </div>

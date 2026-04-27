@@ -35,16 +35,16 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-slate-950 to-slate-950">
+    <div className="min-h-screen bg-surface-root flex flex-col justify-center items-center p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-slate-950 to-slate-950">
       
-      <div className="mb-8 flex items-center gap-2 text-white font-bold text-2xl tracking-tight">
-        <ActivitySquare className="text-indigo-500 w-8 h-8" />
-        NetSim<span className="text-indigo-500">.</span>
+      <div className="mb-8 flex items-center gap-2 text-content-primary font-bold text-2xl tracking-tight">
+        <ActivitySquare className="text-accent-primary w-8 h-8" />
+        NetSim<span className="text-accent-primary">.</span>
       </div>
 
-      <div className="w-full max-w-md bg-slate-900/80 border border-slate-800 p-8 rounded-2xl shadow-xl backdrop-blur-md">
-        <h2 className="text-2xl font-bold text-white mb-2 text-center">Welcome Back</h2>
-        <p className="text-slate-400 text-center mb-8">Sign in to your account to continue</p>
+      <div className="w-full max-w-md bg-surface-panel/80 border border-border-subtle p-8 rounded-2xl shadow-xl backdrop-blur-md">
+        <h2 className="text-2xl font-bold text-content-primary mb-2 text-center">Welcome Back</h2>
+        <p className="text-content-secondary text-center mb-8">Sign in to your account to continue</p>
 
         {apiError && (
           <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm text-center">
@@ -54,15 +54,15 @@ const LoginPage = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Email Address</label>
+            <label className="block text-sm font-medium text-content-secondary mb-1.5">Email Address</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-slate-500" />
+                <Mail className="h-5 w-5 text-content-muted" />
               </div>
               <input 
                 {...register('email')}
                 type="email" 
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors placeholder-slate-500"
+                className="w-full pl-10 pr-4 py-2.5 bg-surface-card border border-border-subtle rounded-lg text-content-primary focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors placeholder-slate-500"
                 placeholder="you@example.com"
               />
             </div>
@@ -70,15 +70,15 @@ const LoginPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+            <label className="block text-sm font-medium text-content-secondary mb-1.5">Password</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-slate-500" />
+                <Lock className="h-5 w-5 text-content-muted" />
               </div>
               <input 
                 {...register('password')}
                 type="password" 
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors placeholder-slate-500"
+                className="w-full pl-10 pr-4 py-2.5 bg-surface-card border border-border-subtle rounded-lg text-content-primary focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors placeholder-slate-500"
                 placeholder="••••••••"
               />
             </div>
@@ -88,7 +88,7 @@ const LoginPage = () => {
           <button 
             type="submit" 
             disabled={isSubmitting}
-            className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all disabled:opacity-70 flex justify-center"
+            className="w-full py-3 px-4 bg-accent-primary hover:bg-indigo-500 text-content-primary rounded-lg font-medium shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all disabled:opacity-70 flex justify-center"
           >
             {isSubmitting ? (
               <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
@@ -96,9 +96,9 @@ const LoginPage = () => {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-400">
+        <p className="mt-6 text-center text-sm text-content-secondary">
           Don't have an account?{' '}
-          <Link to="/register" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
+          <Link to="/register" className="text-accent-primary hover:text-indigo-300 font-medium transition-colors">
             Create account
           </Link>
         </p>
