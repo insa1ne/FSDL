@@ -22,10 +22,14 @@ const useSimulatorStore = create((set, get) => ({
   edges: [],
   selectedNodeId: null,
   activityLog: [],
-  packetSource: null,   // node id for packet source
-  packetTarget: null,   // node id for packet target
-  currentTopologyId: null,   // id from backend (null = unsaved)
-  currentTopologyName: '',   // name of the current topology
+  packetSource: null,
+  packetTarget: null,
+  currentTopologyId: null,
+  currentTopologyName: '',
+  // { [nodeId]: [ { direction:'sent'|'received', counterpartId, counterpartLabel, result:'delivered'|'dropped'|'no_route', hops, time } ] }
+  packetHistory: {},
+  lastPacketSrc: '',   // remembered across sends within same session
+  lastPacketDst: '',
 
   // ─── Load a saved topology into the canvas ──────────────────────────────────
   loadTopology: (nodes, edges, id, name) => {
@@ -44,12 +48,49 @@ const useSimulatorStore = create((set, get) => ({
       selectedNodeId: null,
       currentTopologyId: id || null,
       currentTopologyName: name || '',
+      packetHistory: {},
+      lastPacketSrc: '',
+      lastPacketDst: '',
     });
     get().addLog('info', 'Topology "' + (name || 'Untitled') + '" loaded.');
   },
 
   setCurrentTopologyId: (id) => set({ currentTopologyId: id }),
   setCurrentTopologyName: (name) => set({ currentTopologyName: name }),
+  setLastPacketSrc: (id) => set({ lastPacketSrc: id }),
+  setLastPacketDst: (id) => set({ lastPacketDst: id }),
+
+  // Record a packet event for both the source and destination nodes
+  addPacketRecord: (srcId, dstId, result, hops) => {
+    const nodes = get().nodes;
+    const srcNode = nodes.find((n) => n.id === srcId);
+    const dstNode = nodes.find((n) => n.id === dstId);
+    if (!srcNode || !dstNode) return;
+    const time = new Date().toLocaleTimeString();
+    const id = Date.now() + Math.random();
+    set((state) => {
+      const prev = state.packetHistory;
+      const srcHistory = prev[srcId] || [];
+      const dstHistory = prev[dstId] || [];
+      return {
+        packetHistory: {
+          ...prev,
+          [srcId]: [{ id, direction: 'sent', counterpartId: dstId, counterpartLabel: dstNode.data.label, result, hops, time }, ...srcHistory].slice(0, 50),
+          [dstId]: [{ id, direction: 'received', counterpartId: srcId, counterpartLabel: srcNode.data.label, result, hops, time }, ...dstHistory].slice(0, 50),
+        },
+      };
+    });
+  },
+
+  clearPacketHistory: (nodeId) => {
+    set((state) => {
+      if (nodeId) {
+        const { [nodeId]: _, ...rest } = state.packetHistory;
+        return { packetHistory: rest };
+      }
+      return { packetHistory: {} };
+    });
+  },
 
 
   // ─── React Flow handlers ───────────────────────────────────────────────────
@@ -235,7 +276,7 @@ const useSimulatorStore = create((set, get) => ({
 
   clearCanvas: () => {
     nodeCounter = 1;
-    set({ nodes: [], edges: [], selectedNodeId: null, currentTopologyId: null, currentTopologyName: '' });
+    set({ nodes: [], edges: [], selectedNodeId: null, currentTopologyId: null, currentTopologyName: '', packetHistory: {}, lastPacketSrc: '', lastPacketDst: '' });
     get().addLog('info', 'Canvas cleared.');
   },
 

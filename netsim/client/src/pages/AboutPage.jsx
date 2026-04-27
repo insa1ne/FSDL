@@ -3,17 +3,21 @@ import Sidebar from '../components/Sidebar';
 import { Building2, Code2, GraduationCap, Globe } from 'lucide-react';
 
 const avatarColors = {
-  indigo: '#6366f1',
+  indigo:  '#6366f1',
   emerald: '#10b981',
-  cyan: '#06b6d4',
-  amber: '#f59e0b',
+  cyan:    '#06b6d4',
+  amber:   '#f59e0b',
+  rose:    '#f43f5e',
+  violet:  '#8b5cf6',
 };
 
 const teamMembers = [
-  { name: 'Alice Smith',   roll: '1021101', color: avatarColors.indigo,  initials: 'AS' },
-  { name: 'Bob Jones',     roll: '1021102', color: avatarColors.emerald, initials: 'BJ' },
-  { name: 'Charlie Davis', roll: '1021103', color: avatarColors.cyan,    initials: 'CD' },
-  { name: 'Diana Prince',  roll: '1021104', color: avatarColors.amber,   initials: 'DP' },
+  { name: 'Niya Johnson',     roll: '1023214', color: avatarColors.indigo,  initials: 'NJ' },
+  { name: 'Atharva Patil',    roll: '1023217', color: avatarColors.emerald, initials: 'AP' },
+  { name: 'Harsh Patil',      roll: '1023218', color: avatarColors.cyan,    initials: 'HP' },
+  { name: 'Arpit Pawar',      roll: '1023225', color: avatarColors.amber,   initials: 'AP' },
+  { name: 'Najm Siddiqui',    roll: '1023253', color: avatarColors.rose,    initials: 'NS' },
+  { name: 'Azeem Usmani',     roll: '1023259', color: avatarColors.violet,  initials: 'AU' },
 ];
 
 const AboutPage = () => {
@@ -58,7 +62,7 @@ const AboutPage = () => {
               <p className="text-content-secondary mt-1">The minds behind NetSim</p>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {teamMembers.map((member) => (
                 <div
                   key={member.roll}
@@ -102,7 +106,7 @@ const AboutPage = () => {
               </div>
               <div>
                 <div className="text-xs text-accent-primary font-bold tracking-wider mb-1">PROJECT MENTOR</div>
-                <h3 className="text-lg font-bold text-content-primary">Prof. Jane Doe</h3>
+                <h3 className="text-lg font-bold text-content-primary">Dr. Smita Dange</h3>
               </div>
             </div>
           </section>

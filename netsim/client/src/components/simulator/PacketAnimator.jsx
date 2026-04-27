@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useReactFlow, useViewport } from '@xyflow/react';
 import useSimulatorStore from '../../store/useSimulatorStore';
@@ -26,12 +26,19 @@ function sampleEdgePath(edgeId, numSamples, viewport) {
   const paths = edgeEl.querySelectorAll('path');
   for (const p of paths) {
     const stroke = p.getAttribute('stroke');
-    if (stroke && stroke !== 'transparent' && stroke !== 'none') {
-      pathEl = p;
-      break;
+    // Skip transparent hit-area paths and the animated dash overlay
+    if (!stroke || stroke === 'transparent' || stroke === 'none') continue;
+    if (p.getAttribute('stroke-dasharray') || p.style.animation) continue;
+    pathEl = p;
+    break;
+  }
+  // Fallback: use first non-transparent path
+  if (!pathEl) {
+    for (const p of paths) {
+      const stroke = p.getAttribute('stroke');
+      if (stroke && stroke !== 'transparent' && stroke !== 'none') { pathEl = p; break; }
     }
   }
-  // Fallback: use first path
   if (!pathEl && paths.length > 0) pathEl = paths[0];
   if (!pathEl) return null;
 
@@ -66,7 +73,6 @@ export default function PacketAnimator({ speed, src, dst, onComplete }) {
   const viewport = useViewport();
 
   const [animState, setAnimState] = useState(null);
-  const [isLost, setIsLost] = useState(false);
 
   useEffect(() => {
     if (!src || !dst || src === dst) {
@@ -96,9 +102,11 @@ export default function PacketAnimator({ speed, src, dst, onComplete }) {
     nodes.forEach((n) => (adj[n.id] = []));
     edges.forEach((e) => {
       if (!adj[e.source] || !adj[e.target]) return;
+      // Skip failed (down) links entirely — packet cannot traverse them
+      if (e.data?.failed) return;
       adj[e.source].push(e.target);
       adj[e.target].push(e.source);
-      const link = { failed: e.data?.failed || false, id: e.id };
+      const link = { failed: false, id: e.id };
       linkStatus[e.source + '|' + e.target] = link;
       linkStatus[e.target + '|' + e.source] = link;
     });
@@ -111,7 +119,13 @@ export default function PacketAnimator({ speed, src, dst, onComplete }) {
       const cur = path[path.length - 1];
       if (cur === dst) { finalPath = path; break; }
       for (const nb of (adj[cur] || [])) {
-        if (!visited.has(nb)) { visited.add(nb); queue.push([...path, nb]); }
+        if (!visited.has(nb)) {
+          // Skip offline intermediate nodes (but always allow dst even if offline)
+          const nbNode = nodes.find((n) => n.id === nb);
+          if (nb !== dst && nbNode?.data?.status === 'offline') continue;
+          visited.add(nb);
+          queue.push([...path, nb]);
+        }
       }
     }
 
@@ -130,14 +144,10 @@ export default function PacketAnimator({ speed, src, dst, onComplete }) {
 
     const buildKeyframes = () => {
       const allPoints = [];
-      let failedAt = -1;
-      let failedLinkLabel = '';
 
       for (let i = 0; i < finalPath.length - 1; i++) {
         const uId = finalPath[i];
         const vId = finalPath[i + 1];
-        const linkKey = uId + '|' + vId;
-        const link = linkStatus[linkKey];
         const edge = findEdge(edges, uId, vId);
 
         // Sample the actual SVG path of this edge
@@ -162,19 +172,8 @@ export default function PacketAnimator({ speed, src, dst, onComplete }) {
           edgePoints = [...edgePoints].reverse();
         }
 
-        if (link?.failed) {
-          // Animate only to the midpoint of this link, then stop
-          failedAt = i;
-          const u = nodes.find((n) => n.id === uId);
-          const v = nodes.find((n) => n.id === vId);
-          failedLinkLabel = (u?.data.label || '?') + ' ↔ ' + (v?.data.label || '?');
-
-          const half = Math.floor(edgePoints.length / 2);
-          allPoints.push(...edgePoints.slice(0, half + 1));
-          break;
-        }
-
-        // Add all but the last point (next hop starts at same position)
+        // For intermediate hops: drop the last point to avoid duplicating the
+        // shared node position at the start of the next hop.
         if (i < finalPath.length - 2) {
           allPoints.push(...edgePoints.slice(0, -1));
         } else {
@@ -190,8 +189,6 @@ export default function PacketAnimator({ speed, src, dst, onComplete }) {
 
       setAnimState({
         keyframes: allPoints,
-        failedAt,
-        failedLinkLabel,
         srcNode,
         dstNode,
         hops: finalPath.length - 1,
@@ -228,18 +225,13 @@ export default function PacketAnimator({ speed, src, dst, onComplete }) {
         }}
         transition={{ duration: dur, ease: 'linear' }}
         onAnimationComplete={() => {
-          if (animState.failedAt !== -1) {
-            setIsLost(true);
-            addLog('error', 'Packet DROPPED — link is DOWN: ' + animState.failedLinkLabel);
-          } else {
-            addLog(
-              'success',
-              'Packet delivered! ' + animState.srcNode.data.label +
-              ' → ' + animState.dstNode.data.label +
-              ' in ' + animState.hops + ' hop' + (animState.hops !== 1 ? 's' : '') + '.'
-            );
-          }
-          setTimeout(() => onComplete?.(), 1400);
+          addLog(
+            'success',
+            'Packet delivered! ' + animState.srcNode.data.label +
+            ' → ' + animState.dstNode.data.label +
+            ' in ' + animState.hops + ' hop' + (animState.hops !== 1 ? 's' : '') + '.'
+          );
+          setTimeout(() => onComplete?.('delivered', animState.hops), 1400);
         }}
         style={{
           position: 'absolute',
@@ -251,29 +243,6 @@ export default function PacketAnimator({ speed, src, dst, onComplete }) {
         }}
       />
 
-      {/* ── Packet-lost popup ── */}
-      {isLost && (
-        <motion.div
-          initial={{ opacity: 0, y: 6, scale: 0.85 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          style={{
-            position: 'absolute',
-            left: endPt.x - 90,
-            top: endPt.y + 20,
-            background: '#450a0a',
-            border: '1px solid #dc2626',
-            borderRadius: 8,
-            padding: '7px 14px',
-            fontSize: 11,
-            fontWeight: 700,
-            color: '#fca5a5',
-            whiteSpace: 'nowrap',
-            boxShadow: '0 4px 24px rgba(220,38,38,0.5)',
-          }}
-        >
-          ✕ Packet Lost — Link Down: {animState.failedLinkLabel}
-        </motion.div>
-      )}
 
       {/* ── Route label (top center) ── */}
       <div style={{

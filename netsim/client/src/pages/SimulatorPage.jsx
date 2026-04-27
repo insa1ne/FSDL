@@ -26,10 +26,10 @@ const edgeTypes = { simEdge: SimulationEdge };
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 const toastStyles = {
-  success: { bg: '#052e16', border: '#16a34a', text: '#4ade80' },
-  error:   { bg: '#450a0a', border: '#dc2626', text: '#f87171' },
-  info:    { bg: '#0c1a2e', border: '#3b82f6', text: '#93c5fd' },
-  warning: { bg: '#1c1107', border: '#d97706', text: '#fcd34d' },
+  success: { bg: 'var(--surface-panel)', border: '#16a34a', text: '#16a34a' },
+  error:   { bg: 'var(--surface-panel)', border: '#dc2626', text: '#dc2626' },
+  info:    { bg: 'var(--surface-panel)', border: '#3b82f6', text: '#3b82f6' },
+  warning: { bg: 'var(--surface-panel)', border: '#d97706', text: '#d97706' },
 };
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
@@ -66,83 +66,114 @@ const EmptyState = () => (
   </div>
 );
 
+// ─── Node card for packet modal ───────────────────────────────────────────────
+const TYPE_PILL = { pc: '#818cf8', router: '#f59e0b', switch: '#2dd4bf' };
+
+function NodeSelectCard({ node, selected, onSelect, dimmed }) {
+  const isOffline = node.data.status === 'offline';
+  const accent = TYPE_PILL[node.type] || '#818cf8';
+  return (
+    <div
+      onClick={() => !dimmed && onSelect(node.id)}
+      style={{
+        padding: '7px 10px', borderRadius: 9, border: '2px solid',
+        borderColor: selected ? accent : 'var(--border-subtle)',
+        background: selected ? accent + '18' : 'var(--surface-card)',
+        cursor: dimmed ? 'not-allowed' : 'pointer',
+        display: 'flex', alignItems: 'center', gap: 8,
+        opacity: (isOffline || dimmed) ? 0.45 : 1,
+        transition: 'all 0.12s',
+        boxShadow: selected ? '0 0 0 2px ' + accent + '44' : 'none',
+      }}
+    >
+      <div style={{ width: 7, height: 7, borderRadius: '50%', background: isOffline ? '#ef4444' : '#22c55e', flexShrink: 0 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--content-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {node.data.label}
+        </div>
+        <div style={{ fontSize: 10, color: selected ? accent : 'var(--content-muted)', fontFamily: 'monospace' }}>
+          {node.data.ip || 'No IP'}
+        </div>
+      </div>
+      {selected && <div style={{ width: 7, height: 7, borderRadius: '50%', background: accent, flexShrink: 0 }} />}
+    </div>
+  );
+}
+
 // ─── Packet send modal ────────────────────────────────────────────────────────
-function PacketSendModal({ nodes, onSend, onClose }) {
-  const [src, setSrc] = useState('');
-  const [dst, setDst] = useState('');
+function PacketSendModal({ nodes, initialSrc, initialDst, onSend, onClose }) {
+  const [src, setSrc] = useState(initialSrc || '');
+  const [dst, setDst] = useState(initialDst || '');
+  const srcNode = nodes.find((n) => n.id === src);
+  const dstNode = nodes.find((n) => n.id === dst);
+  const canSend = src && dst && src !== dst;
 
-  const send = () => {
-    if (!src || !dst) return;
-    onSend(src, dst);
-    onClose();
-  };
-
-  const selStyle = {
-    width: '100%', background: 'var(--surface-root)', border: '1px solid var(--border-default)',
-    borderRadius: 6, padding: '6px 10px', color: 'var(--content-primary)', fontSize: 12,
-    outline: 'none', cursor: 'pointer',
-  };
+  const send = () => { if (!canSend) return; onSend(src, dst); onClose(); };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 200,
-    }}>
+    <div
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 200, backdropFilter: 'blur(4px)',
+      }}
+    >
       <div style={{
-        background: 'var(--surface-panel)', border: '1px solid var(--surface-card)',
-        borderRadius: 16, padding: 24, width: 320,
-        boxShadow: '0 24px 64px rgba(0,0,0,0.8)',
+        background: 'var(--surface-panel)', border: '1px solid var(--border-default)',
+        borderRadius: 20, width: 500, maxWidth: '95vw', overflow: 'hidden',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.45)',
       }}>
-        <h3 style={{ color: 'var(--content-primary)', fontSize: 16, fontWeight: 700, margin: '0 0 4px' }}>
-          Send Packet (Ping)
-        </h3>
-        <p style={{ color: 'var(--content-muted)', fontSize: 12, margin: '0 0 20px' }}>
-          Select source and destination devices
-        </p>
+        {/* Header */}
+        <div style={{ padding: '14px 18px', background: 'var(--surface-card)', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--content-primary)' }}>⚡ Send Packet</div>
+            <div style={{ fontSize: 11, color: 'var(--content-muted)', marginTop: 1 }}>Select source &amp; destination — routed via BFS</div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--content-muted)', fontSize: 17, lineHeight: 1 }}>&#10005;</button>
+        </div>
 
-        <label style={labelSt}>Source Device</label>
-        <select value={src} onChange={(e) => setSrc(e.target.value)} style={selStyle}>
-          <option value="">Select source…</option>
-          {nodes.map((n) => (
-            <option key={n.id} value={n.id}>
-              {n.data.label} {n.data.ip ? '(' + n.data.ip + ')' : ''}
-            </option>
-          ))}
-        </select>
+        {/* Route preview */}
+        <div style={{ padding: '10px 18px 0' }}>
+          <div style={{ padding: '7px 12px', borderRadius: 8, background: 'var(--surface-card)', border: '1px solid var(--border-subtle)', fontSize: 11, fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ color: '#38bdf8', fontWeight: 700 }}>{srcNode ? (srcNode.data.ip || srcNode.data.label) : '?'}</span>
+            <span style={{ color: 'var(--content-muted)' }}>──►</span>
+            <span style={{ color: '#4ade80', fontWeight: 700 }}>{dstNode ? (dstNode.data.ip || dstNode.data.label) : '?'}</span>
+            {canSend && <span style={{ marginLeft: 'auto', color: 'var(--content-muted)' }}>ICMP Echo</span>}
+          </div>
+        </div>
 
-        <label style={{ ...labelSt, marginTop: 12 }}>Destination Device</label>
-        <select value={dst} onChange={(e) => setDst(e.target.value)} style={selStyle}>
-          <option value="">Select destination…</option>
-          {nodes.filter((n) => n.id !== src).map((n) => (
-            <option key={n.id} value={n.id}>
-              {n.data.label} {n.data.ip ? '(' + n.data.ip + ')' : ''}
-            </option>
-          ))}
-        </select>
+        {/* Two-col picker */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 28px 1fr', gap: 6, padding: '12px 18px' }}>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 5 }}>📤 Source</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 210, overflowY: 'auto' }}>
+              {nodes.map((n) => <NodeSelectCard key={n.id} node={n} selected={src === n.id} onSelect={(id) => { setSrc(id); if (id === dst) setDst(''); }} dimmed={false} />)}
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--border-default)', fontSize: 18, paddingTop: 20 }}>→</div>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#4ade80', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 5 }}>📥 Destination</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 210, overflowY: 'auto' }}>
+              {nodes.map((n) => <NodeSelectCard key={n.id} node={n} selected={dst === n.id} onSelect={setDst} dimmed={n.id === src} />)}
+            </div>
+          </div>
+        </div>
 
-        <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
+        {/* Actions */}
+        <div style={{ padding: '10px 18px 18px', display: 'flex', gap: 8 }}>
           <button
-            onClick={send}
-            disabled={!src || !dst}
+            onClick={send} disabled={!canSend}
             style={{
-              flex: 1, padding: '8px 0', background: 'var(--accent-primary)', color: '#fff',
-              border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13,
-              cursor: src && dst ? 'pointer' : 'not-allowed',
-              opacity: src && dst ? 1 : 0.5,
+              flex: 1, padding: '9px 0', background: canSend ? 'var(--accent-primary)' : 'var(--surface-card)',
+              color: canSend ? '#fff' : 'var(--content-muted)', border: 'none', borderRadius: 10,
+              fontWeight: 700, fontSize: 13, cursor: canSend ? 'pointer' : 'not-allowed',
+              boxShadow: canSend ? '0 0 18px rgba(79,70,229,0.4)' : 'none', transition: 'all 0.15s',
             }}
           >
-            Send Packet
+            {canSend ? '⚡ Send Packet' : 'Select source & destination'}
           </button>
-          <button
-            onClick={onClose}
-            style={{
-              padding: '8px 16px', background: 'var(--surface-card)', color: 'var(--content-secondary)',
-              border: '1px solid var(--border-default)', borderRadius: 8, fontSize: 13, cursor: 'pointer',
-            }}
-          >
-            Cancel
-          </button>
+          <button onClick={onClose} style={{ padding: '9px 16px', background: 'var(--surface-card)', color: 'var(--content-secondary)', border: '1px solid var(--border-default)', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}>Cancel</button>
         </div>
       </div>
     </div>
@@ -229,9 +260,11 @@ const SimulatorCanvas = () => {
     addNode, removeNode,
     generateStar, generateRing, generateBus, clearCanvas,
     setSelectedNode, selectedNodeId,
-    addLog,
+    addLog, addPacketRecord,
     currentTopologyId, currentTopologyName,
     setCurrentTopologyId, setCurrentTopologyName,
+    lastPacketSrc, lastPacketDst,
+    setLastPacketSrc, setLastPacketDst,
   } = useSimulatorStore();
 
   const theme = useThemeStore((s) => s.theme);
@@ -337,6 +370,8 @@ const SimulatorCanvas = () => {
   };
 
   const startAnimation = (src, dst) => {
+    setLastPacketSrc(src);
+    setLastPacketDst(dst);
     setIsAnimating(false);
     setAnimSrc(src);
     setAnimDst(dst);
@@ -412,6 +447,8 @@ const SimulatorCanvas = () => {
       {showPacketModal && (
         <PacketSendModal
           nodes={nodes}
+          initialSrc={lastPacketSrc}
+          initialDst={lastPacketDst}
           onSend={(src, dst) => startAnimation(src, dst)}
           onClose={() => setShowPacketModal(false)}
         />
@@ -438,7 +475,7 @@ const SimulatorCanvas = () => {
                 background: 'transparent', color: 'var(--content-secondary)', fontSize: 12, fontWeight: 600,
                 cursor: 'pointer', transition: 'all 0.15s',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--border-default)'; e.currentTarget.style.color = '#fff'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = color + '22'; e.currentTarget.style.color = 'var(--content-primary)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--content-secondary)'; }}
             >
               <Icon size={13} color={color} />
@@ -514,8 +551,8 @@ const SimulatorCanvas = () => {
           style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '5px 10px', borderRadius: 7,
-            background: '#052e16', border: '1px solid #16a34a',
-            color: '#4ade80', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            background: 'var(--surface-card)', border: '1px solid #16a34a',
+            color: '#16a34a', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             opacity: isSaving ? 0.6 : 1,
           }}
         >
@@ -596,8 +633,8 @@ const SimulatorCanvas = () => {
             onReconnectEnd={onReconnectEnd}
           >
             <Background
-              color={theme === 'dark' ? '#0d1f38' : '#c8d5e8'}
-              gap={22} size={1}
+              color={theme === 'dark' ? '#1e3a5f' : '#9db5cc'}
+              gap={22} size={1.5}
             />
             <Controls
               position="bottom-right"
@@ -612,7 +649,7 @@ const SimulatorCanvas = () => {
                 return '#818cf8';
               }}
               maskColor="rgba(2,8,23,0.75)"
-              style={{ marginBottom: 110, marginRight: 0 }}
+              style={{ marginBottom: 150, marginRight: 0 }}
             />
           </ReactFlow>
 
@@ -622,7 +659,8 @@ const SimulatorCanvas = () => {
               speed={speed}
               src={animSrc}
               dst={animDst}
-              onComplete={() => {
+              onComplete={(result, hops) => {
+                addPacketRecord(animSrc, animDst, result || 'delivered', hops || 1);
                 setIsAnimating(false);
               }}
             />
