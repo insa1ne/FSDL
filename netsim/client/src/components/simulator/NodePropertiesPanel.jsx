@@ -10,7 +10,7 @@ const typeColors = {
 const typeIcons = { pc: Monitor, router: RouterIcon, switch: Box };
 
 export default function NodePropertiesPanel() {
-  const { nodes, selectedNodeId, setSelectedNode, updateNodeData, updateNodeIp, removeNode, addLog } = useSimulatorStore();
+  const { nodes, selectedNodeId, setSelectedNode, updateNodeData, updateNodeIp, removeNode, addLog, isIpInUse } = useSimulatorStore();
   const node = nodes.find((n) => n.id === selectedNodeId);
   const [editLabel, setEditLabel] = useState('');
   const [editIp, setEditIp] = useState('');
@@ -32,6 +32,10 @@ export default function NodePropertiesPanel() {
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$|^$/;
     if (editIp && !ipRegex.test(editIp)) {
       addLog('error', 'Invalid IP address: ' + editIp);
+      return;
+    }
+    if (editIp && isIpInUse(editIp, node.id)) {
+      addLog('error', `IP ${editIp} is already in use by another device.`);
       return;
     }
     updateNodeData(node.id, { label: editLabel, ip: editIp });

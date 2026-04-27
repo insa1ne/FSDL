@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { ActivitySquare, Lock, Mail } from 'lucide-react';
+import api from '../api/axios';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -12,19 +13,25 @@ const loginSchema = z.object({
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const [apiError, setApiError] = useState('');
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(loginSchema)
   });
 
   const onSubmit = async (data) => {
-    // Mock login since backend (Phase 2) is missing
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        localStorage.setItem('token', 'mock_jwt_token_12345');
-        navigate('/dashboard');
-        resolve();
-      }, 800);
-    });
+    setApiError('');
+    try {
+      const res = await api.post('/auth/login', {
+        email: data.email,
+        password: data.password,
+      });
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      navigate('/dashboard');
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Login failed. Please try again.';
+      setApiError(msg);
+    }
   };
 
   return (
@@ -38,6 +45,12 @@ const LoginPage = () => {
       <div className="w-full max-w-md bg-slate-900/80 border border-slate-800 p-8 rounded-2xl shadow-xl backdrop-blur-md">
         <h2 className="text-2xl font-bold text-white mb-2 text-center">Welcome Back</h2>
         <p className="text-slate-400 text-center mb-8">Sign in to your account to continue</p>
+
+        {apiError && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm text-center">
+            {apiError}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>

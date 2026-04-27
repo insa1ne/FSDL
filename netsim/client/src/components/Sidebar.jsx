@@ -1,12 +1,19 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Network, Calculator, Info, LogOut, ActivitySquare } from 'lucide-react';
+import api from '../api/axios';
 
 const Sidebar = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (_) {
+      // Ignore errors — we're logging out regardless
+    }
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 

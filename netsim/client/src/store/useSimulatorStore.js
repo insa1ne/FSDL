@@ -24,6 +24,33 @@ const useSimulatorStore = create((set, get) => ({
   activityLog: [],
   packetSource: null,   // node id for packet source
   packetTarget: null,   // node id for packet target
+  currentTopologyId: null,   // id from backend (null = unsaved)
+  currentTopologyName: '',   // name of the current topology
+
+  // ─── Load a saved topology into the canvas ──────────────────────────────────
+  loadTopology: (nodes, edges, id, name) => {
+    // Find the highest node counter from loaded nodes
+    let maxCounter = 0;
+    nodes.forEach((n) => {
+      const parts = n.id.split('-');
+      const num = parseInt(parts[parts.length - 1], 10);
+      if (!isNaN(num) && num > maxCounter) maxCounter = num;
+    });
+    nodeCounter = maxCounter + 1;
+
+    set({
+      nodes,
+      edges,
+      selectedNodeId: null,
+      currentTopologyId: id || null,
+      currentTopologyName: name || '',
+    });
+    get().addLog('info', 'Topology "' + (name || 'Untitled') + '" loaded.');
+  },
+
+  setCurrentTopologyId: (id) => set({ currentTopologyId: id }),
+  setCurrentTopologyName: (name) => set({ currentTopologyName: name }),
+
 
   // ─── React Flow handlers ───────────────────────────────────────────────────
 
@@ -180,6 +207,11 @@ const useSimulatorStore = create((set, get) => ({
     get().addLog('success', 'Auto-assigned IPs to ' + newNodes.length + ' devices using base ' + baseIp);
   },
 
+  isIpInUse: (ip, excludeNodeId) => {
+    if (!ip) return false;
+    return get().nodes.some((n) => n.id !== excludeNodeId && n.data.ip === ip);
+  },
+
   // ─── Packet source/target ─────────────────────────────────────────────────
 
   setPacketSource: (id) => set({ packetSource: id }),
@@ -203,7 +235,7 @@ const useSimulatorStore = create((set, get) => ({
 
   clearCanvas: () => {
     nodeCounter = 1;
-    set({ nodes: [], edges: [], selectedNodeId: null });
+    set({ nodes: [], edges: [], selectedNodeId: null, currentTopologyId: null, currentTopologyName: '' });
     get().addLog('info', 'Canvas cleared.');
   },
 

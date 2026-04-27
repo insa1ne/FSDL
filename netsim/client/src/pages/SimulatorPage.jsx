@@ -14,9 +14,10 @@ import IpConfigDrawer from '../components/simulator/IpConfigDrawer';
 import DevicePalette from '../components/simulator/DevicePalette';
 import NodePropertiesPanel from '../components/simulator/NodePropertiesPanel';
 import ActivityLog from '../components/simulator/ActivityLog';
+import api from '../api/axios';
 import {
   Star, GripHorizontal, Circle, Zap, Settings,
-  Info, Trash2, RotateCcw, Send, ChevronDown,
+  Info, Trash2, RotateCcw, Send, ChevronDown, Save,
 } from 'lucide-react';
 
 const nodeTypes = { pc: PCNode, router: RouterNode, switch: SwitchNode };
@@ -149,6 +150,76 @@ function PacketSendModal({ nodes, onSend, onClose }) {
 
 const labelSt = { display: 'block', fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 };
 
+// ─── Save Topology Modal ──────────────────────────────────────────────────────
+function SaveTopologyModal({ defaultName, onSave, onClose }) {
+  const [name, setName] = useState(defaultName || '');
+
+  const handleSave = () => {
+    if (!name.trim()) return;
+    onSave(name.trim());
+    onClose();
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 200,
+    }}>
+      <div style={{
+        background: '#0f172a', border: '1px solid #1e293b',
+        borderRadius: 16, padding: 24, width: 340,
+        boxShadow: '0 24px 64px rgba(0,0,0,0.8)',
+      }}>
+        <h3 style={{ color: '#e2e8f0', fontSize: 16, fontWeight: 700, margin: '0 0 4px' }}>
+          Save Topology
+        </h3>
+        <p style={{ color: '#475569', fontSize: 12, margin: '0 0 20px' }}>
+          Give your network topology a name
+        </p>
+
+        <label style={labelSt}>Topology Name</label>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Campus Network v2"
+          style={{
+            width: '100%', background: '#020817', border: '1px solid #334155',
+            borderRadius: 6, padding: '8px 10px', color: '#e2e8f0', fontSize: 13,
+            outline: 'none', boxSizing: 'border-box',
+          }}
+          autoFocus
+          onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+        />
+
+        <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
+          <button
+            onClick={handleSave}
+            disabled={!name.trim()}
+            style={{
+              flex: 1, padding: '8px 0', background: '#16a34a', color: '#fff',
+              border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13,
+              cursor: name.trim() ? 'pointer' : 'not-allowed',
+              opacity: name.trim() ? 1 : 0.5,
+            }}
+          >
+            Save
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '8px 16px', background: '#1e293b', color: '#94a3b8',
+              border: '1px solid #334155', borderRadius: 8, fontSize: 13, cursor: 'pointer',
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main canvas component ────────────────────────────────────────────────────
 const SimulatorCanvas = () => {
   const {
@@ -158,6 +229,8 @@ const SimulatorCanvas = () => {
     generateStar, generateRing, generateBus, clearCanvas,
     setSelectedNode, selectedNodeId,
     addLog,
+    currentTopologyId, currentTopologyName,
+    setCurrentTopologyId, setCurrentTopologyName,
   } = useSimulatorStore();
 
   const { fitView, screenToFlowPosition } = useReactFlow();
@@ -169,6 +242,8 @@ const SimulatorCanvas = () => {
   const [animDst, setAnimDst] = useState(null);
   const [isIpDrawerOpen, setIsIpDrawerOpen] = useState(false);
   const [showPacketModal, setShowPacketModal] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState(null);
   const [dragType, setDragType] = useState(null);
 
@@ -243,6 +318,40 @@ const SimulatorCanvas = () => {
     setTimeout(() => setIsAnimating(true), 60);
   };
 
+  // ── Save topology ──
+  const handleSaveTopology = async (name) => {
+    if (nodes.length === 0) {
+      showToast('Cannot save an empty topology', 'error');
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const nodesJson = JSON.stringify(nodes);
+      const edgesJson = JSON.stringify(edges);
+
+      if (currentTopologyId) {
+        // Update existing topology
+        const res = await api.put('/topologies/' + currentTopologyId, { name, nodesJson, edgesJson });
+        setCurrentTopologyName(name);
+        showToast('Topology "' + name + '" updated!', 'success');
+        addLog('success', 'Topology "' + name + '" saved to server (updated).');
+      } else {
+        // Create new topology
+        const res = await api.post('/topologies', { name, nodesJson, edgesJson });
+        setCurrentTopologyId(res.data.id);
+        setCurrentTopologyName(name);
+        showToast('Topology "' + name + '" saved!', 'success');
+        addLog('success', 'Topology "' + name + '" saved to server (new).');
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Failed to save topology.';
+      showToast(msg, 'error');
+      addLog('error', 'Save failed: ' + msg);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // ── Canvas click (deselect) ──
   const onPaneClick = () => setSelectedNode(null);
 
@@ -263,6 +372,15 @@ const SimulatorCanvas = () => {
         }}>
           {toast.msg}
         </div>
+      )}
+
+      {/* ── Save Topology Modal ── */}
+      {showSaveModal && (
+        <SaveTopologyModal
+          defaultName={currentTopologyName}
+          onSave={handleSaveTopology}
+          onClose={() => setShowSaveModal(false)}
+        />
       )}
 
       {/* ── Send Packet Modal ── */}
@@ -355,6 +473,28 @@ const SimulatorCanvas = () => {
           }}>
           <Zap size={13} />
           {isAnimating ? 'Sending…' : 'Ping / Send Packet'}
+        </button>
+
+        {/* Save Topology */}
+        <button
+          onClick={() => {
+            if (nodes.length === 0) {
+              showToast('Cannot save an empty topology', 'error');
+              return;
+            }
+            setShowSaveModal(true);
+          }}
+          disabled={isSaving}
+          title="Save topology to server"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            padding: '5px 10px', borderRadius: 7,
+            background: '#052e16', border: '1px solid #16a34a',
+            color: '#4ade80', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            opacity: isSaving ? 0.6 : 1,
+          }}
+        >
+          <Save size={13} /> {isSaving ? 'Saving…' : (currentTopologyId ? 'Update' : 'Save')}
         </button>
 
         {/* IP Config */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, RefreshCw } from 'lucide-react';
 import useSimulatorStore from '../../store/useSimulatorStore';
 
@@ -81,23 +81,64 @@ export default function IpConfigDrawer({ isOpen, onClose }) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {nodes.map((node) => (
-              <div key={node.id}>
-                <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 3 }}>
-                  {node.data.label}
-                  <span style={{ color: '#334155', fontWeight: 400 }}> — {node.type}</span>
-                </div>
-                <input
-                  type="text"
-                  value={node.data.ip || ''}
-                  onChange={(e) => updateNodeIp(node.id, e.target.value)}
-                  placeholder="e.g. 192.168.1.1"
-                  style={{ ...inp, fontFamily: 'monospace' }}
-                />
-              </div>
+              <NodeIpRow key={node.id} node={node} />
             ))}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function NodeIpRow({ node }) {
+  const { updateNodeIp, isIpInUse, addLog } = useSimulatorStore();
+  const [val, setVal] = useState(node.data.ip || '');
+  const [err, setErr] = useState(false);
+
+  useEffect(() => {
+    setVal(node.data.ip || '');
+  }, [node.data.ip]);
+
+  const handleBlur = () => {
+    if (val === node.data.ip) return;
+    if (val && isIpInUse(val, node.id)) {
+      addLog('error', `IP ${val} is already assigned to another device.`);
+      setVal(node.data.ip || ''); 
+      setErr(true);
+      setTimeout(() => setErr(false), 2000);
+      return;
+    }
+    if (val && !ipRegex.test(val)) {
+      addLog('error', `Invalid IP format: ${val}`);
+      setVal(node.data.ip || '');
+      setErr(true);
+      setTimeout(() => setErr(false), 2000);
+      return;
+    }
+    updateNodeIp(node.id, val);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.target.blur();
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, marginBottom: 3 }}>
+        {node.data.label}
+        <span style={{ color: '#334155', fontWeight: 400 }}> — {node.type}</span>
+      </div>
+      <input
+        type="text"
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        placeholder="e.g. 192.168.1.1"
+        style={{ ...inp, fontFamily: 'monospace', borderColor: err ? '#f87171' : '#334155' }}
+      />
     </div>
   );
 }
