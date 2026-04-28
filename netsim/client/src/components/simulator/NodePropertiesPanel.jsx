@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { Monitor, Router as RouterIcon, Box, X, Wifi, WifiOff, Trash2, CheckCircle, Send, ArrowDownLeft } from 'lucide-react';
 import useSimulatorStore from '../../store/useSimulatorStore';
+import useThemeStore from '../../store/useThemeStore';
 
-const typeColors = {
+const typeColorsDark = {
   pc:     { color: '#818cf8', label: 'PC (End Device)' },
   router: { color: '#f59e0b', label: 'Router (Layer 3)' },
   switch: { color: '#2dd4bf', label: 'Switch (Layer 2)' },
+};
+const typeColorsLight = {
+  pc:     { color: '#4f46e5', label: 'PC (End Device)' },
+  router: { color: '#b45309', label: 'Router (Layer 3)' },
+  switch: { color: '#0f766e', label: 'Switch (Layer 2)' },
 };
 const typeIcons = { pc: Monitor, router: RouterIcon, switch: Box };
 
@@ -23,7 +29,9 @@ export default function NodePropertiesPanel() {
 
   if (!node) return null;
 
-  const { color, label: typeLabel } = typeColors[node.type] || typeColors.pc;
+  const theme = useThemeStore((s) => s.theme);
+  const colorMap = theme === 'dark' ? typeColorsDark : typeColorsLight;
+  const { color, label: typeLabel } = colorMap[node.type] || colorMap.pc;
   const Icon = typeIcons[node.type] || Monitor;
   const isOffline = node.data.status === 'offline';
   const history = packetHistory[node.id] || [];

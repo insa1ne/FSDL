@@ -1,33 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import { ReactFlow, Background, useNodesState, useEdgesState } from '@xyflow/react';
+import { ReactFlow, Background, useNodesState, useEdgesState, Handle, Position } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { motion } from 'framer-motion';
 import { Monitor, Router as RouterIcon } from 'lucide-react';
+import useThemeStore from '../store/useThemeStore';
 
 // Hero node — completely inline styles to avoid any tailwind template literal issues
-const HeroNode = ({ data }) => (
-  <div
-    style={{
-      padding: 12,
-      borderRadius: 10,
-      border: '1px solid',
-      borderColor: data.type === 'switch' ? '#4338ca' : 'var(--border-default)',
-      background: data.type === 'switch' ? '#1e1b4b' : 'var(--surface-card)',
-      color: data.type === 'switch' ? '#818cf8' : 'var(--content-secondary)',
-      boxShadow: data.type === 'switch' ? '0 0 16px rgba(99,102,241,0.4)' : '0 2px 8px rgba(0,0,0,0.1)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 4,
-      width: 80,
-      height: 76,
-      justifyContent: 'center',
-    }}
-  >
-    {data.type === 'switch' ? <RouterIcon size={26} /> : <Monitor size={22} />}
-    <span style={{ fontSize: 11, fontWeight: 600 }}>{data.label}</span>
-  </div>
-);
+const HeroNode = ({ data }) => {
+  const theme = useThemeStore((s) => s.theme);
+  const isSwitch = data.type === 'switch';
+  const isDark = theme === 'dark';
+  return (
+    <div
+      style={{
+        padding: 12,
+        borderRadius: 10,
+        border: '1px solid',
+        borderColor: isSwitch ? (isDark ? '#4338ca' : '#6366f1') : 'var(--border-default)',
+        background: isSwitch ? (isDark ? '#1e1b4b' : '#eef2ff') : 'var(--surface-card)',
+        color: isSwitch ? (isDark ? '#818cf8' : '#4f46e5') : 'var(--content-secondary)',
+        boxShadow: isSwitch ? (isDark ? '0 0 16px rgba(99,102,241,0.4)' : '0 2px 16px rgba(99,102,241,0.25)') : '0 2px 8px rgba(0,0,0,0.1)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 4,
+        width: 80,
+        height: 76,
+        justifyContent: 'center',
+      }}
+    >
+      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
+      {isSwitch ? <RouterIcon size={26} /> : <Monitor size={22} />}
+      <span style={{ fontSize: 11, fontWeight: 600 }}>{data.label}</span>
+      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
+    </div>
+  );
+};
 
 const nodeTypes = { heroNode: HeroNode };
 
@@ -40,16 +48,16 @@ const initialNodes = [
 ];
 
 const initialEdges = [
-  { id: 'e1', source: 'pc1', target: 'center', animated: true, style: { stroke: '#818cf8', strokeWidth: 2 } },
-  { id: 'e2', source: 'pc2', target: 'center', animated: true, style: { stroke: '#818cf8', strokeWidth: 2 } },
-  { id: 'e3', source: 'pc3', target: 'center', animated: true, style: { stroke: '#818cf8', strokeWidth: 2 } },
-  { id: 'e4', source: 'pc4', target: 'center', animated: true, style: { stroke: '#818cf8', strokeWidth: 2 } },
+  { id: 'e1', source: 'pc1', target: 'center', type: 'straight', animated: true, style: { stroke: '#818cf8', strokeWidth: 2 } },
+  { id: 'e2', source: 'pc2', target: 'center', type: 'straight', animated: true, style: { stroke: '#818cf8', strokeWidth: 2 } },
+  { id: 'e3', source: 'pc3', target: 'center', type: 'straight', animated: true, style: { stroke: '#818cf8', strokeWidth: 2 } },
+  { id: 'e4', source: 'pc4', target: 'center', type: 'straight', animated: true, style: { stroke: '#818cf8', strokeWidth: 2 } },
 ];
 
 // Repeating keyframe sequence: pc1 → center → pc2, then pc3 → center → pc4
 const packetPaths = [
-  { x: [105, 260, 425], y: [56, 166, 56] },
-  { x: [105, 260, 425], y: [276, 166, 276] },
+  { x: [94, 254, 414], y: [90, 124, 90] },
+  { x: [94, 254, 414], y: [234, 200, 234] },
 ];
 
 export default function HeroSimulator() {

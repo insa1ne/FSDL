@@ -18,17 +18,24 @@ function App() {
   }, [initTheme]);
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
-        <Route path="/simulator" element={<PrivateRoute><SimulatorPage /></PrivateRoute>} />
-        <Route path="/subnet-calc" element={<SubnetCalcPage />} />
-        <Route path="/about" element={<AboutPage />} />
-      </Routes>
-    </Router>
+    <>
+      {/* Stitch fixed background layers */}
+      <div className="stitch-grid-bg"  aria-hidden="true" />
+      <div className="stitch-mesh-bg"  aria-hidden="true" />
+      <div className="stitch-noise-bg" aria-hidden="true" />
+
+      <Router>
+        <Routes>
+          <Route path="/"            element={<LandingPage />} />
+          <Route path="/login"       element={<LoginPage />} />
+          <Route path="/register"    element={<RegisterPage />} />
+          <Route path="/dashboard"   element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+          <Route path="/simulator"   element={<PrivateRoute><SimulatorPage /></PrivateRoute>} />
+          <Route path="/subnet-calc" element={<SubnetCalcPage />} />
+          <Route path="/about"       element={<AboutPage />} />
+        </Routes>
+      </Router>
+    </>
   );
 }
 

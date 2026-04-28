@@ -1,125 +1,108 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar';
-import { Building2, Code2, GraduationCap, Globe } from 'lucide-react';
-
-const avatarColors = {
-  indigo:  '#6366f1',
-  emerald: '#10b981',
-  cyan:    '#06b6d4',
-  amber:   '#f59e0b',
-  rose:    '#f43f5e',
-  violet:  '#8b5cf6',
-};
+import { GraduationCap, Globe } from 'lucide-react';
 
 const teamMembers = [
-  { name: 'Niya Johnson',     roll: '1023214', color: avatarColors.indigo,  initials: 'NJ' },
-  { name: 'Atharva Patil',    roll: '1023217', color: avatarColors.emerald, initials: 'AP' },
-  { name: 'Harsh Patil',      roll: '1023218', color: avatarColors.cyan,    initials: 'HP' },
-  { name: 'Arpit Pawar',      roll: '1023225', color: avatarColors.amber,   initials: 'AP' },
-  { name: 'Najm Siddiqui',    roll: '1023253', color: avatarColors.rose,    initials: 'NS' },
-  { name: 'Azeem Usmani',     roll: '1023259', color: avatarColors.violet,  initials: 'AU' },
+  { name: 'Niya Johnson',   roll: '1023214', initials: 'NJ', color: '#b76dff' },
+  { name: 'Atharva Patil',  roll: '1023217', initials: 'AP', color: '#920498' },
+  { name: 'Harsh Patil',    roll: '1023218', initials: 'HP', color: '#dcb8ff' },
+  { name: 'Arpit Pawar',    roll: '1023225', initials: 'AP', color: '#ddb7ff' },
+  { name: 'Najm Siddiqui',  roll: '1023253', initials: 'NS', color: '#ffaaf8' },
+  { name: 'Azeem Usmani',   roll: '1023259', initials: 'AU', color: '#ffb4ab' },
 ];
+
+const sgFont = { fontFamily: "'Space Grotesk', sans-serif" };
 
 const AboutPage = () => {
   return (
-    <div className="flex bg-surface-root min-h-screen">
+    <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-5xl mx-auto space-y-12 pb-12">
+      <main className="ml-64 flex-1 p-16 overflow-y-auto">
+        <div className="max-w-4xl mx-auto pb-16">
 
           {/* Header */}
-          <header className="flex flex-col items-center text-center space-y-4 pt-8">
-            <div className="w-20 h-20 bg-surface-panel border border-border-subtle rounded-2xl flex items-center justify-center shadow-xl">
-              <Building2 className="w-10 h-10 text-accent-primary" />
+          <header className="flex flex-col items-center text-center gap-5 pt-4 mb-16">
+            <div className="w-16 h-16 glass-panel rounded-2xl flex items-center justify-center"
+              style={{ border: '1px solid rgba(183,109,255,0.2)' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 28, color: 'var(--accent-primary)', fontVariationSettings: "'FILL' 1" }}>school</span>
             </div>
             <div>
-              <h1 className="text-3xl font-extrabold text-content-primary tracking-tight">
+              <h1 className="text-3xl font-bold mb-2" style={{ ...sgFont, color: 'var(--content-primary)', letterSpacing: '-0.02em' }}>
                 Fr. C. Rodrigues Institute of Technology
               </h1>
-              <p className="text-lg text-content-secondary mt-2">Department of Computer Engineering</p>
+              <p className="text-sm" style={{ color: 'var(--content-secondary)' }}>Department of Computer Engineering</p>
             </div>
           </header>
 
           {/* What We Built */}
-          <section className="bg-surface-panel border border-border-subtle rounded-3xl p-8 shadow-xl">
-            <h2 className="text-2xl font-bold text-content-primary mb-4 flex items-center gap-2">
-              <Code2 className="text-accent-primary" /> What We Built
+          <section className="glass-panel card-hover-glow rounded-2xl p-8 mb-10">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-3" style={{ ...sgFont, color: 'var(--content-primary)' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'var(--accent-primary)', fontVariationSettings: "'FILL' 1" }}>code</span>
+              What We Built
             </h2>
-            <p className="text-content-secondary leading-relaxed text-lg max-w-3xl">
+            <p className="leading-relaxed text-base" style={{ color: 'var(--content-secondary)' }}>
               NetSim is a modern, real-time network topology visualizer and simulator. Built to help
               students and professionals intuitively design network structures like Star, Ring, and
               Bus topologies. Features include an animated BFS-driven packet tracer, link-failure
               simulations, and a fully client-side subnet calculator. The frontend stack utilizes{' '}
-              <strong>React, Vite, Zustand, Framer Motion, and Tailwind CSS</strong> to deliver a
-              highly interactive and aesthetically rich experience.
+              <strong style={{ color: 'var(--accent-primary)' }}>React, Vite, Zustand, Framer Motion, and Tailwind CSS</strong>{' '}
+              to deliver a highly interactive and aesthetically rich experience.
             </p>
           </section>
 
-          {/* Team Section */}
-          <section>
+          {/* Team Grid */}
+          <section className="mb-12">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-content-primary">Development Team</h2>
-              <p className="text-content-secondary mt-1">The minds behind NetSim</p>
+              <h2 className="text-2xl font-bold mb-1" style={{ ...sgFont, color: 'var(--content-primary)' }}>Development Team</h2>
+              <p className="text-sm" style={{ color: 'var(--content-secondary)' }}>The minds behind NetSim</p>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {teamMembers.map((member) => (
-                <div
-                  key={member.roll}
-                  className="bg-surface-panel/50 border border-border-subtle rounded-2xl p-6 flex flex-col items-center text-center hover:bg-surface-hover/80 transition-colors"
-                >
-                  <div
+                <div key={member.roll}
+                  className="glass-panel card-hover-glow rounded-xl p-6 flex flex-col items-center text-center">
+                  {/* Avatar */}
+                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg mb-4"
                     style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: '50%',
-                      background: member.color,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 20,
-                      fontWeight: 700,
-                      color: '#fff',
-                      marginBottom: 16,
-                      boxShadow: `0 0 20px ${member.color}55`,
-                      outline: '4px solid var(--surface-root)',
-                    }}
-                  >
+                      background: `linear-gradient(135deg, ${member.color}90, ${member.color}50)`,
+                      border: `2px solid ${member.color}40`,
+                      boxShadow: `0 0 20px ${member.color}30`,
+                      fontFamily: "'Space Grotesk', sans-serif",
+                    }}>
                     {member.initials}
                   </div>
-                  <h3 className="text-lg font-bold text-content-primary">{member.name}</h3>
-                  <div className="flex items-center gap-1.5 text-content-secondary text-sm mt-1">
-                    <GraduationCap className="w-4 h-4" />
-                    Roll No: {member.roll}
+                  <h3 className="font-semibold mb-1" style={{ ...sgFont, color: 'var(--content-primary)' }}>{member.name}</h3>
+                  <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--content-muted)' }}>
+                    <GraduationCap className="w-3 h-3" />
+                    Roll: {member.roll}
                   </div>
-                  <button className="mt-4 p-2 bg-surface-root rounded-full text-content-secondary hover:text-content-primary transition-colors">
-                    <Globe className="w-4 h-4" />
-                  </button>
                 </div>
               ))}
             </div>
-
-            {/* Mentor */}
-            <div className="mt-8 mx-auto max-w-sm bg-surface-panel border border-indigo-500/30 rounded-2xl p-6 flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-indigo-900 border border-indigo-500/30 flex items-center justify-center">
-                <span className="text-accent-primary font-bold text-sm">Prof</span>
-              </div>
-              <div>
-                <div className="text-xs text-accent-primary font-bold tracking-wider mb-1">PROJECT MENTOR</div>
-                <h3 className="text-lg font-bold text-content-primary">Dr. Smita Dange</h3>
-              </div>
-            </div>
           </section>
 
-          {/* Attribution footer */}
-          <footer className="pt-12 border-t border-border-subtle text-center">
-            <p className="text-content-muted text-sm max-w-3xl mx-auto leading-relaxed">
-              "This project was developed as part of the Full Stack Development Laboratory course at
-              Fr. C. Rodrigues Institute of Technology, Vashi, Navi Mumbai, Department of Computer
-              Engineering."
+          {/* Mentor */}
+          <div className="glass-panel card-hover-glow rounded-xl p-6 flex items-center gap-5 mb-12 max-w-sm mx-auto"
+            style={{ borderColor: 'rgba(183,109,255,0.2)' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #b76dff60, #92049860)', border: '2px solid rgba(183,109,255,0.3)' }}>
+              <span className="text-xs font-bold" style={{ color: 'var(--accent-primary)', ...sgFont }}>Prof</span>
+            </div>
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--accent-primary)', ...sgFont }}>
+                Project Mentor
+              </div>
+              <h3 className="font-semibold" style={{ ...sgFont, color: 'var(--content-primary)' }}>Dr. Smita Dange</h3>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <footer className="pt-8 border-t text-center" style={{ borderColor: 'var(--border-subtle)' }}>
+            <p className="text-xs leading-relaxed max-w-2xl mx-auto" style={{ color: 'var(--content-muted)' }}>
+              This project was developed as part of the Full Stack Development Laboratory course at
+              Fr. C. Rodrigues Institute of Technology, Vashi, Navi Mumbai.
             </p>
           </footer>
-
         </div>
       </main>
     </div>

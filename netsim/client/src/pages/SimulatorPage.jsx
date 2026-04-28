@@ -26,10 +26,10 @@ const edgeTypes = { simEdge: SimulationEdge };
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 const toastStyles = {
-  success: { bg: 'var(--surface-panel)', border: '#16a34a', text: '#16a34a' },
-  error:   { bg: 'var(--surface-panel)', border: '#dc2626', text: '#dc2626' },
-  info:    { bg: 'var(--surface-panel)', border: '#3b82f6', text: '#3b82f6' },
-  warning: { bg: 'var(--surface-panel)', border: '#d97706', text: '#d97706' },
+  success: { bg: 'var(--surface-panel)', border: '#4ade80', text: '#86efac' },
+  error:   { bg: 'var(--surface-panel)', border: '#ffb4ab', text: '#ffb4ab' },
+  info:    { bg: 'var(--surface-panel)', border: 'var(--accent-primary)', text: 'var(--accent-primary)' },
+  warning: { bg: 'var(--surface-panel)', border: '#fcd34d', text: '#fcd34d' },
 };
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
@@ -416,7 +416,7 @@ const SimulatorCanvas = () => {
   const onPaneClick = () => setSelectedNode(null);
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative', marginLeft: 256 }}>
 
       {/* ── Toast ── */}
       {toast && (
@@ -454,29 +454,35 @@ const SimulatorCanvas = () => {
         />
       )}
 
-      {/* ── Top Toolbar ── */}
+      {/* ── Top Toolbar (Stitch: floating pill style) ── */}
       <div style={{
-        height: 56, background: 'var(--surface-panel)', borderBottom: '1px solid var(--surface-card)',
+        height: 56,
+        background: 'var(--panel-bg)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: '1px solid var(--border-subtle)',
+        boxShadow: '0 0 20px rgba(168,85,247,0.08)',
         display: 'flex', alignItems: 'center', padding: '0 16px', gap: 12,
         position: 'relative', zIndex: 10, flexShrink: 0,
       }}>
         {/* Topology presets */}
         <div style={{ display: 'flex', gap: 2, background: 'var(--surface-card)', borderRadius: 8, padding: 3, border: '1px solid var(--border-default)' }}>
           {[
-            { id: 'star', label: 'Star', color: '#818cf8', Icon: Star },
-            { id: 'ring', label: 'Ring', color: '#22d3ee', Icon: Circle },
-            { id: 'bus',  label: 'Bus',  color: '#f59e0b', Icon: GripHorizontal },
+            { id: 'star', label: 'Star', color: 'var(--accent-primary)', Icon: Star },
+            { id: 'ring', label: 'Ring', color: '#ffaaf8', Icon: Circle },
+            { id: 'bus',  label: 'Bus',  color: '#dcb8ff', Icon: GripHorizontal },
           ].map(({ id, label, color, Icon }) => (
             <button key={id} onClick={() => handleGenerate(id)}
               title={'Generate ' + label + ' topology'}
               style={{
                 display: 'flex', alignItems: 'center', gap: 5,
                 padding: '4px 10px', borderRadius: 6, border: 'none',
-                background: 'transparent', color: 'var(--content-secondary)', fontSize: 12, fontWeight: 600,
+                background: 'transparent', color: 'var(--content-muted)', fontSize: 12, fontWeight: 600,
                 cursor: 'pointer', transition: 'all 0.15s',
+                fontFamily: "'Space Grotesk', sans-serif",
               }}
               onMouseEnter={(e) => { e.currentTarget.style.background = color + '22'; e.currentTarget.style.color = 'var(--content-primary)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--content-secondary)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--content-muted)'; }}
             >
               <Icon size={13} color={color} />
               {label}
@@ -484,7 +490,7 @@ const SimulatorCanvas = () => {
           ))}
         </div>
 
-        <div style={{ width: 1, height: 24, background: 'var(--surface-card)' }} />
+        <div style={{ width: 1, height: 24, background: 'var(--border-default)' }} />
 
         {/* Clear button */}
         <button onClick={clearCanvas}
@@ -493,10 +499,11 @@ const SimulatorCanvas = () => {
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '5px 10px', borderRadius: 7,
             background: 'var(--surface-card)', border: '1px solid var(--border-default)',
-            color: 'var(--content-secondary)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            color: 'var(--content-muted)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            fontFamily: "'Space Grotesk', sans-serif",
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = '#7f1d1d'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--content-secondary)'; e.currentTarget.style.borderColor = 'var(--border-default)'; }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#ffb4ab'; e.currentTarget.style.borderColor = 'rgba(255,180,171,0.4)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--content-muted)'; e.currentTarget.style.borderColor = 'var(--border-default)'; }}
         >
           <Trash2 size={13} /> Clear
         </button>
@@ -521,20 +528,24 @@ const SimulatorCanvas = () => {
           </div>
         </div>
 
-        {/* Send Packet */}
+        {/* Send Packet — Stitch gradient style */}
         <button onClick={handleSendPacket}
           disabled={isAnimating}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            padding: '6px 14px', borderRadius: 8,
-            background: isAnimating ? '#312e81' : 'var(--accent-primary)',
+            padding: '6px 16px', borderRadius: 8,
+            background: isAnimating
+              ? 'rgba(183,109,255,0.3)'
+              : 'linear-gradient(to right, #b76dff, #920498)',
             color: '#fff', border: 'none', fontSize: 12, fontWeight: 700,
             cursor: isAnimating ? 'default' : 'pointer',
-            boxShadow: '0 0 14px rgba(79,70,229,0.4)',
+            boxShadow: isAnimating ? 'none' : '0 0 18px rgba(183,109,255,0.35)',
             opacity: isAnimating ? 0.7 : 1,
+            fontFamily: "'Space Grotesk', sans-serif",
+            letterSpacing: '0.04em',
           }}>
           <Zap size={13} />
-          {isAnimating ? 'Sending…' : 'Ping / Send Packet'}
+          {isAnimating ? 'Sending…' : 'Send Packet'}
         </button>
 
         {/* Save Topology */}
@@ -551,9 +562,10 @@ const SimulatorCanvas = () => {
           style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '5px 10px', borderRadius: 7,
-            background: 'var(--surface-card)', border: '1px solid #16a34a',
-            color: '#16a34a', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            background: 'var(--surface-card)', border: '1px solid rgba(74,222,128,0.4)',
+            color: '#4ade80', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             opacity: isSaving ? 0.6 : 1,
+            fontFamily: "'Space Grotesk', sans-serif",
           }}
         >
           <Save size={13} /> {isSaving ? 'Saving…' : (currentTopologyId ? 'Update' : 'Save')}
@@ -566,8 +578,11 @@ const SimulatorCanvas = () => {
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '5px 10px', borderRadius: 7,
             background: 'var(--surface-card)', border: '1px solid var(--border-default)',
-            color: 'var(--content-secondary)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-          }}>
+            color: 'var(--content-muted)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            fontFamily: "'Space Grotesk', sans-serif",
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = 'var(--content-primary)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'var(--content-muted)'}>
           <Settings size={13} /> IP Config
         </button>
 
@@ -577,7 +592,9 @@ const SimulatorCanvas = () => {
             padding: '5px 8px', borderRadius: 7,
             background: 'var(--surface-card)', border: '1px solid var(--border-default)',
             color: 'var(--content-muted)', cursor: 'pointer', display: 'flex',
-          }}>
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = 'var(--content-primary)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'var(--content-muted)'}>
           <RotateCcw size={13} />
         </button>
       </div>
@@ -626,15 +643,15 @@ const SimulatorCanvas = () => {
             style={{ background: 'var(--surface-root)' }}
             fitViewOptions={{ padding: 0.2 }}
             deleteKeyCode={null}   // handled manually above
-            connectionLineStyle={{ stroke: '#818cf8', strokeWidth: 2, strokeDasharray: '4 3' }}
+            connectionLineStyle={{ stroke: 'var(--accent-primary)', strokeWidth: 2, strokeDasharray: '4 3' }}
             connectionLineType="bezier"
             onReconnect={onReconnect}
             onReconnectStart={onReconnectStart}
             onReconnectEnd={onReconnectEnd}
           >
             <Background
-              color={theme === 'dark' ? '#1e3a5f' : '#9db5cc'}
-              gap={22} size={1.5}
+              color="rgba(183,109,255,0.15)"
+              gap={40} size={1}
             />
             <Controls
               position="bottom-right"
@@ -682,7 +699,8 @@ const SimulatorCanvas = () => {
 
 export default function SimulatorPage() {
   return (
-    <div style={{ display: 'flex', background: 'var(--surface-root)', minHeight: '100vh', overflow: 'hidden' }}>
+    // Sidebar is position:fixed — no flex spacer needed, SimulatorCanvas has marginLeft:256 instead
+    <div style={{ background: 'var(--surface-root)', minHeight: '100vh', overflow: 'hidden' }}>
       <Sidebar />
       <ReactFlowProvider>
         <SimulatorCanvas />

@@ -1,73 +1,248 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
+
+/* ─── Stitch Design System: Modern NetSim Dashboard Variant 2 ─────────────── */
+/* Fonts: Space Grotesk (headlines/labels) + Inter (body) */
+/* Color palette: deep purple-black + lavender primary */
 
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
-  --color-surface-root: var(--surface-root);
-  --color-surface-panel: var(--surface-panel);
-  --color-surface-card: var(--surface-card);
-  --color-surface-hover: var(--surface-hover);
-  --color-border-subtle: var(--border-subtle);
-  --color-border-default: var(--border-default);
-  --color-content-primary: var(--content-primary);
+
+  /* Surface / Background tokens */
+  --color-surface-root:    var(--surface-root);
+  --color-surface-panel:   var(--surface-panel);
+  --color-surface-card:    var(--surface-card);
+  --color-surface-hover:   var(--surface-hover);
+
+  /* Border tokens */
+  --color-border-subtle:   var(--border-subtle);
+  --color-border-default:  var(--border-default);
+
+  /* Content tokens */
+  --color-content-primary:   var(--content-primary);
   --color-content-secondary: var(--content-secondary);
-  --color-content-muted: var(--content-muted);
-  --color-accent-primary: var(--accent-primary);
-  --color-accent-hover: var(--accent-hover);
+  --color-content-muted:     var(--content-muted);
+
+  /* Accent tokens */
+  --color-accent-primary:  var(--accent-primary);
+  --color-accent-hover:    var(--accent-hover);
+
+  /* Stitch Material Design 3 tokens (matching exact Stitch colors) */
+  --color-stitch-bg:                  #15121a;
+  --color-stitch-surface:             #15121a;
+  --color-stitch-surface-container:   #211e27;
+  --color-stitch-surface-container-low: #1d1a22;
+  --color-stitch-surface-container-high: #2c2831;
+  --color-stitch-surface-container-highest: #37333c;
+  --color-stitch-surface-container-lowest: #100d15;
+  --color-stitch-surface-bright:      #3b3741;
+  --color-stitch-primary:             #ddb7ff;
+  --color-stitch-primary-container:   #b76dff;
+  --color-stitch-secondary:           #ffaaf8;
+  --color-stitch-secondary-container: #920498;
+  --color-stitch-tertiary:            #dcb8ff;
+  --color-stitch-on-surface:          #e8e0ec;
+  --color-stitch-on-surface-variant:  #cfc2d6;
+  --color-stitch-outline:             #988d9f;
+  --color-stitch-outline-variant:     #4d4354;
+  --color-stitch-error:               #ffb4ab;
 }
 
 @layer base {
   :root {
-    --surface-root: #f8fafc;
+    /* Stitch light mode: bright backgrounds */
+    --surface-root:  #f8f9fa;
     --surface-panel: #ffffff;
-    --surface-card: #f1f5f9;
-    --surface-hover: #e2e8f0;
-    --border-subtle: #e2e8f0;
-    --border-default: #cbd5e1;
-    --content-primary: #0f172a;
-    --content-secondary: #475569;
-    --content-muted: #64748b;
-    --accent-primary: #4f46e5;
-    --accent-hover: #4338ca;
-  }
-  
-  .dark {
-    --surface-root: #020817;
-    --surface-panel: #0f172a;
-    --surface-card: #1e293b;
-    --surface-hover: #334155;
-    --border-subtle: #1e293b;
-    --border-default: #334155;
-    --content-primary: #e2e8f0;
-    --content-secondary: #94a3b8;
-    --content-muted: #64748b;
-    --accent-primary: #4f46e5;
-    --accent-hover: #4338ca;
+    --surface-card:  #f3f4f6;
+    --surface-hover: #e5e7eb;
+
+    --border-subtle:  rgba(0,0,0,0.05);
+    --border-default: #d1d5db;
+
+    --content-primary:   #111827;
+    --content-secondary: #4b5563;
+    --content-muted:     #9ca3af;
+
+    /* Stitch primary: lavender purple */
+    --accent-primary: #920498; /* Darker purple for better contrast on light */
+    --accent-hover:   #b76dff;
+
+    --glow-accent: 0 0 25px rgba(183, 109, 255, 0.15);
+    
+    /* Variables for specific components to use later */
+    --panel-bg: rgba(255, 255, 255, 0.8);
+    --panel-border: rgba(0, 0, 0, 0.08);
   }
 
-  * {
-    box-sizing: border-box;
+  .dark {
+    /* Stitch design: deep purple-black backgrounds */
+    --surface-root:  #15121a;
+    --surface-panel: #1d1a22;
+    --surface-card:  #211e27;
+    --surface-hover: #2c2831;
+
+    --border-subtle:  rgba(255,255,255,0.05);
+    --border-default: #4d4354;
+
+    --content-primary:   #e8e0ec;
+    --content-secondary: #cfc2d6;
+    --content-muted:     #988d9f;
+
+    /* Stitch primary: lavender purple */
+    --accent-primary: #ddb7ff;
+    --accent-hover:   #b76dff;
+
+    --glow-accent: 0 0 25px rgba(183, 109, 255, 0.25);
+
+    --panel-bg: rgba(255, 255, 255, 0.02);
+    --panel-border: rgba(255, 255, 255, 0.06);
   }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
   body {
     font-family: 'Inter', system-ui, sans-serif;
-    background: var(--surface-root);
+    background-color: var(--surface-root);
     color: var(--content-primary);
     margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Text selection */
+  ::selection {
+    background: rgba(183, 109, 255, 0.3);
+    color: var(--content-primary);
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar        { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track  { background: var(--surface-root); }
+  ::-webkit-scrollbar-thumb  { background: var(--border-default); border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+
+  /* Form inputs — Stitch style */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    background: var(--surface-panel);
+    border: 1px solid var(--border-default);
+    color: var(--content-primary);
+    border-radius: 0.5rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(183, 109, 255, 0.12);
+  }
+  input::placeholder, textarea::placeholder {
+    color: var(--content-muted);
+  }
+
+  /* Range input */
+  input[type="range"] { accent-color: var(--accent-primary); }
 }
 
-/* Dash animation for active edges in the simulator */
+/* ─── Stitch Background System ────────────────────────────────────────────── */
+/* Fixed grid background (40px lines, very subtle white) */
+.stitch-grid-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+}
+
+/* Mesh gradient ambient glow */
+.stitch-mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% -20%, rgba(183, 109, 255, 0.12), transparent 55%),
+    radial-gradient(circle at -10% 40%, rgba(255, 170, 248, 0.07), transparent 50%),
+    radial-gradient(circle at 110% 60%, rgba(130, 43, 210, 0.08), transparent 50%);
+}
+
+/* Noise texture overlay */
+.stitch-noise-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* Page content sits above background effects */
+#root > * { position: relative; z-index: 1; }
+
+/* ─── Stitch Glass Panel ─────────────────────────────────────────────────── */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--panel-border);
+}
+
+/* Card hover glow (purple, matching Stitch) */
+.card-hover-glow {
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.card-hover-glow:hover {
+  box-shadow: 0 0 30px rgba(183, 109, 255, 0.12);
+  border-color: rgba(183, 109, 255, 0.3) !important;
+}
+
+/* ─── Stitch Typography ──────────────────────────────────────────────────── */
+.font-space-grotesk, h1, h2, h3 {
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+}
+
+/* Gradient text — Stitch style (lavender → pink) */
+.text-gradient {
+  background: linear-gradient(to right, #ddb7ff, #ffaaf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Stitch Button ──────────────────────────────────────────────────────── */
+.btn-primary-gradient {
+  background: linear-gradient(to right, #b76dff, #920498);
+  color: white;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  transition: box-shadow 0.2s ease;
+}
+.btn-primary-gradient:hover {
+  box-shadow: 0 0 20px rgba(183, 109, 255, 0.35);
+}
+
+/* ─── Dash animation for packet simulation ────────────────────────────────── */
 @keyframes dash {
-  to {
-    stroke-dashoffset: -10;
-  }
+  to { stroke-dashoffset: -10; }
 }
 
-/* ─── React Flow Theme Overrides ─────────────────────────────────────────── */
+/* ─── React Flow Theme ───────────────────────────────────────────────────── */
+.react-flow__background {
+  background-color: var(--surface-root) !important;
+}
 .react-flow__controls {
   --xy-controls-box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   background: var(--surface-panel);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-subtle) !important;
   border-radius: 10px;
   overflow: hidden;
   padding: 2px;
@@ -75,15 +250,10 @@
   display: flex;
   flex-direction: column;
 }
-
-.dark .react-flow__controls {
-  --xy-controls-box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-}
-
 .react-flow__controls-button {
   --xy-controls-button-background-color: var(--surface-card);
   --xy-controls-button-background-color-hover: var(--surface-hover);
-  --xy-controls-button-color: var(--content-secondary);
+  --xy-controls-button-color: var(--content-muted);
   --xy-controls-button-color-hover: var(--content-primary);
   --xy-controls-button-border-color: var(--border-default);
   border-radius: 7px !important;
@@ -95,18 +265,8 @@
   justify-content: center !important;
   transition: background 0.15s, color 0.15s !important;
 }
-
-.react-flow__controls-button:last-child {
-  border-bottom: none !important;
-}
-
-.react-flow__controls-button svg {
-  fill: currentColor;
-  width: 14px;
-  height: 14px;
-}
-
-/* MiniMap theme */
+.react-flow__controls-button:last-child { border-bottom: none !important; }
+.react-flow__controls-button svg { fill: currentColor; width: 14px; height: 14px; }
 .react-flow__minimap {
   background: var(--surface-panel) !important;
   border: 1px solid var(--border-subtle) !important;

@@ -1,22 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import Sidebar from '../components/Sidebar';
-import { Calculator, SplitSquareHorizontal } from 'lucide-react';
+import { SplitSquareHorizontal } from 'lucide-react';
 
+/* ─── Utility: IP ↔ Binary helpers (unchanged logic) ──────────────────── */
 const ipToBin = (ipStr) => {
   if (!ipStr) return '';
   const parts = ipStr.split('.');
   if (parts.length !== 4) return '';
   return parts.map(p => parseInt(p).toString(2).padStart(8, '0')).join('');
 };
+const binToIp = (binStr) => [
+  parseInt(binStr.substring(0, 8), 2),
+  parseInt(binStr.substring(8, 16), 2),
+  parseInt(binStr.substring(16, 24), 2),
+  parseInt(binStr.substring(24, 32), 2),
+].join('.');
 
-const binToIp = (binStr) => {
-  return [
-    parseInt(binStr.substring(0, 8), 2),
-    parseInt(binStr.substring(8, 16), 2),
-    parseInt(binStr.substring(16, 24), 2),
-    parseInt(binStr.substring(24, 32), 2)
-  ].join('.');
-};
+const sgFont = { fontFamily: "'Space Grotesk', sans-serif" };
 
 const SubnetCalcPage = () => {
   const [ipInput, setIpInput] = useState('192.168.1.0');
@@ -32,180 +32,214 @@ const SubnetCalcPage = () => {
       const networkBin = ipBin.substring(0, prefixInput) + '0'.repeat(32 - prefixInput);
       const broadcastBin = ipBin.substring(0, prefixInput) + '1'.repeat(32 - prefixInput);
       const maskBin = '1'.repeat(prefixInput) + '0'.repeat(32 - prefixInput);
-      
       const firstHostBin = networkBin.substring(0, 31) + '1';
       const lastHostBin = broadcastBin.substring(0, 31) + '0';
-
       const numHosts = Math.max(0, Math.pow(2, 32 - prefixInput) - 2);
-      
       return {
         ipBin,
         networkId: binToIp(networkBin),
         broadcast: binToIp(broadcastBin),
         mask: binToIp(maskBin),
+        wildcard: binToIp('0'.repeat(prefixInput) + '1'.repeat(32 - prefixInput)),
         firstHost: binToIp(firstHostBin),
         lastHost: binToIp(lastHostBin),
         hosts: numHosts,
-        prefix: prefixInput
+        prefix: prefixInput,
       };
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   }, [ipInput, prefixInput]);
 
-  const handleSplit = () => {
-    if (prefixInput < 30) {
-      setPrefixInput(prev => prev + 1);
-    }
-  };
-
-  const renderOctets = (binStr, prefixLength) => {
+  /* Binary octets renderer — Stitch style */
+  const renderOctets = (binStr, prefixLength, colorVar = 'var(--accent-primary)', dimColor = 'var(--content-secondary)') => {
     const octets = [
       binStr.substring(0, 8),
       binStr.substring(8, 16),
       binStr.substring(16, 24),
-      binStr.substring(24, 32)
+      binStr.substring(24, 32),
     ];
-
-    const colors = [
-      "text-accent-primary font-bold", 
-      "text-emerald-400 font-bold", 
-      "text-amber-400 font-bold", 
-      "text-cyan-400 font-bold"
-    ];
-
     let bitsCounted = 0;
-
     return (
-      <div className="flex bg-surface-root p-4 rounded-lg font-mono text-lg border border-border-subtle relative">
+      <div className="flex gap-2 flex-wrap font-mono text-sm">
         {octets.map((oct, i) => (
-          <div key={i} className="flex flex-col relative mr-6 last:mr-0">
-            <div className={colors[i]}>{parseInt(oct, 2).toString().padStart(3, '0')}</div>
-            <div className="flex mt-1">
+          <React.Fragment key={i}>
+            <div className="flex gap-px">
               {oct.split('').map((bit, j) => {
-                const currentBitIndex = bitsCounted++;
-                const isNetwork = currentBitIndex < prefixLength;
-                
+                const idx = bitsCounted++;
+                const isNetwork = idx < prefixLength;
                 return (
-                  <span 
-                    key={j} 
-                    className={`\${isNetwork ? 'text-content-primary' : 'text-slate-600'} 
-                      \${currentBitIndex === prefixLength - 1 ? 'border-r-2 border-red-500 mr-0.5 pr-0.5' : ''}`}
-                  >
+                  <span key={j}
+                    style={{
+                      color: isNetwork ? colorVar : dimColor,
+                      borderRight: idx === prefixLength - 1 ? '2px solid var(--accent-hover)' : undefined,
+                      paddingRight: idx === prefixLength - 1 ? 2 : undefined,
+                      marginRight: idx === prefixLength - 1 ? 2 : undefined,
+                    }}>
                     {bit}
                   </span>
                 );
               })}
             </div>
-          </div>
+            {i < 3 && <span style={{ color: 'var(--border-default)' }}>.</span>}
+          </React.Fragment>
         ))}
-        {prefixLength > 0 && prefixLength < 32 && (
-          <div className="absolute top-1 left-4 text-xs text-red-500 font-sans mt-1">
-            Network / Host split
-          </div>
-        )}
       </div>
     );
   };
 
-  return (
-    <div className="flex bg-surface-root min-h-screen text-content-primary">
-      <Sidebar />
-      <main className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-4xl mx-auto">
-          
-          <header className="mb-8">
-            <h1 className="text-3xl font-bold text-content-primary mb-2 flex items-center gap-3">
-              <Calculator className="text-accent-primary" />
-              Subnet Calculator
-            </h1>
-            <p className="text-content-secondary">Instantly derive network boundaries and host ranges using pure client-side bit manipulation.</p>
-          </header>
+  const StatCard = ({ label, value, color = 'var(--accent-primary)' }) => (
+    <div className="p-4 rounded-lg relative overflow-hidden group"
+      style={{ background: 'var(--surface-hover)', border: '1px solid var(--border-subtle)' }}>
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        style={{ background: `rgba(183,109,255,0.04)` }} />
+      <div className="text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--border-default)', ...sgFont }}>
+        {label}
+      </div>
+      <div className="font-mono text-sm font-medium" style={{ color }}>{value}</div>
+    </div>
+  );
 
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-surface-panel border border-border-subtle p-6 rounded-2xl shadow-xl">
-              <label className="block text-sm font-medium text-content-secondary mb-2">IP Address</label>
-              <input 
+  return (
+    <div className="flex min-h-screen" style={{ background: 'transparent' }}>
+      <Sidebar />
+      <main className="ml-64 flex-1 p-16 max-w-7xl">
+        {/* Header */}
+        <header className="mb-12">
+          <h1 className="text-3xl font-semibold mb-1" style={{ ...sgFont, color: 'var(--accent-primary)', letterSpacing: '-0.02em' }}>
+            Subnet Calculator
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--content-secondary)' }}>
+            Advanced CIDR routing analysis and binary visualization tool for network topology planning.
+          </p>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* ── Input Panel ── */}
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            <div className="glass-panel rounded-xl p-6">
+              <label className="block text-xs font-medium mb-2 uppercase tracking-wider"
+                style={{ color: 'var(--accent-primary)', ...sgFont }}>
+                Network Address
+              </label>
+              <input
+                type="text"
                 value={ipInput}
                 onChange={e => setIpInput(e.target.value)}
-                className="w-full bg-surface-root border border-border-subtle p-3 rounded-lg text-content-primary font-mono focus:border-indigo-500 outline-none"
+                className="w-full px-4 py-2.5 text-sm rounded-lg mb-6 font-mono"
+                style={{ background: 'var(--surface-panel)', border: '1px solid var(--border-default)', color: 'var(--content-primary)' }}
               />
-            </div>
-            <div className="bg-surface-panel border border-border-subtle p-6 rounded-2xl shadow-xl">
-              <label className="block text-sm font-medium text-content-secondary mb-2">Prefix Length (/{prefixInput})</label>
-              <input 
-                type="range"
-                min="0" max="32"
-                value={prefixInput}
-                onChange={e => setPrefixInput(Number(e.target.value))}
-                className="w-full mt-3 accent-indigo-500"
-              />
-              <div className="flex justify-between text-xs text-content-muted mt-2">
-                <span>/0</span>
-                <span>/16</span>
-                <span>/32</span>
+
+              <label className="block text-xs font-medium mb-3 uppercase tracking-wider"
+                style={{ color: 'var(--accent-primary)', ...sgFont }}>
+                CIDR Prefix &nbsp;
+                <span className="font-mono px-2 py-0.5 rounded ml-1"
+                  style={{ background: 'rgba(183,109,255,0.1)', color: 'var(--accent-primary)' }}>
+                  /{prefixInput}
+                </span>
+              </label>
+              <div className="flex items-center gap-3 mb-6">
+                <input type="range" min="0" max="32"
+                  value={prefixInput}
+                  onChange={e => setPrefixInput(Number(e.target.value))}
+                  className="flex-1" style={{ accentColor: 'var(--accent-primary)' }}
+                />
+              </div>
+
+              {calc && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-subtle)' }}>
+                    <div className="text-xs mb-1" style={{ color: 'var(--border-default)', ...sgFont }}>Subnet Mask</div>
+                    <div className="font-mono text-xs" style={{ color: 'var(--content-primary)' }}>{calc.mask}</div>
+                  </div>
+                  <div className="p-3 rounded-lg" style={{ background: 'var(--surface-card)', border: '1px solid var(--border-subtle)' }}>
+                    <div className="text-xs mb-1" style={{ color: 'var(--border-default)', ...sgFont }}>Wildcard</div>
+                    <div className="font-mono text-xs" style={{ color: 'var(--content-primary)' }}>{calc.wildcard}</div>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-5 pt-4 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+                <button
+                  onClick={() => prefixInput < 30 && setPrefixInput(p => p + 1)}
+                  disabled={prefixInput >= 30}
+                  className="flex items-center gap-2 w-full justify-center text-sm py-2 rounded-lg border transition-all disabled:opacity-40"
+                  style={{ ...sgFont, color: 'var(--accent-primary)', borderColor: 'rgba(183,109,255,0.3)', background: 'rgba(183,109,255,0.08)' }}
+                  onMouseEnter={e => !e.currentTarget.disabled && (e.currentTarget.style.background = 'rgba(183,109,255,0.15)')}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(183,109,255,0.08)'}>
+                  <SplitSquareHorizontal className="w-4 h-4" />
+                  Split Subnet (+1 bit)
+                </button>
+                <p className="text-xs text-center mt-2" style={{ color: 'var(--content-muted)' }}>
+                  Creates two subnets each with half the hosts.
+                </p>
               </div>
             </div>
           </div>
 
-          {calc ? (
-            <div className="space-y-6">
-              
-              <div className="bg-surface-panel border border-border-subtle p-6 rounded-2xl shadow-xl">
-                <h3 className="text-lg font-semibold text-content-primary mb-4">Binary Layout</h3>
-                {renderOctets(calc.ipBin, calc.prefix)}
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-surface-panel border border-border-subtle p-6 rounded-2xl shadow-xl space-y-4">
-                  <div>
-                    <div className="text-xs text-content-secondary uppercase tracking-widest font-bold">Network Address</div>
-                    <div className="text-xl font-mono text-emerald-400">{calc.networkId}</div>
+          {/* ── Analysis Panel ── */}
+          <div className="lg:col-span-8 flex flex-col gap-6">
+            {calc ? (
+              <>
+                {/* Network Details */}
+                <div className="glass-panel rounded-xl p-6">
+                  <h3 className="text-base font-semibold mb-5 flex items-center gap-2" style={{ ...sgFont, color: 'var(--content-primary)' }}>
+                    <span className="material-symbols-outlined text-lg" style={{ color: 'var(--accent-primary)', fontSize: 20 }}>data_object</span>
+                    Network Details
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <StatCard label="Network IP"   value={calc.networkId}  color="var(--accent-primary)" />
+                    <StatCard label="Broadcast IP"  value={calc.broadcast}  color="var(--accent-hover)" />
+                    <StatCard label="Total Hosts"   value={Math.pow(2, 32-prefixInput).toLocaleString()} color="var(--accent-primary)" />
+                    <StatCard label="Usable Hosts"  value={calc.hosts.toLocaleString()} color="var(--content-primary)" />
                   </div>
-                  <div>
-                    <div className="text-xs text-content-secondary uppercase tracking-widest font-bold">Broadcast Address</div>
-                    <div className="text-xl font-mono text-amber-400">{calc.broadcast}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-content-secondary uppercase tracking-widest font-bold">Subnet Mask</div>
-                    <div className="text-xl font-mono text-accent-primary">{calc.mask}</div>
+                  <div className="mt-4 flex justify-between items-center p-4 rounded-lg"
+                    style={{ background: 'var(--surface-hover)', border: '1px solid var(--border-subtle)' }}>
+                    <div>
+                      <div className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--border-default)', ...sgFont }}>Host Range</div>
+                      <div className="font-mono text-sm" style={{ color: 'var(--content-primary)' }}>
+                        {calc.hosts > 0 ? `${calc.firstHost} — ${calc.lastHost}` : 'No usable hosts'}
+                      </div>
+                    </div>
+                    <button onClick={() => navigator.clipboard?.writeText(`${calc.firstHost} - ${calc.lastHost}`)}
+                      style={{ color: 'var(--accent-primary)' }} className="transition-colors hover:opacity-70">
+                      <span className="material-symbols-outlined" style={{ fontSize: 20 }}>content_copy</span>
+                    </button>
                   </div>
                 </div>
 
-                <div className="bg-surface-panel border border-border-subtle p-6 rounded-2xl shadow-xl space-y-4 flex flex-col">
-                  <div>
-                    <div className="text-xs text-content-secondary uppercase tracking-widest font-bold">Usable Host Range</div>
-                    <div className="text-lg font-mono text-cyan-400">
-                      {calc.hosts > 0 ? `${calc.firstHost} — ${calc.lastHost}` : 'N/A'}
+                {/* Binary Map */}
+                <div className="glass-panel rounded-xl p-6">
+                  <h3 className="text-base font-semibold mb-5 flex items-center gap-2" style={{ ...sgFont, color: 'var(--content-primary)' }}>
+                    <span className="material-symbols-outlined text-lg" style={{ color: 'var(--accent-hover)', fontSize: 20 }}>code_blocks</span>
+                    Binary Map
+                  </h3>
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <div className="text-xs mb-2 uppercase tracking-wider" style={{ color: 'var(--border-default)', ...sgFont }}>IP Address</div>
+                      {renderOctets(calc.ipBin, calc.prefix, 'var(--accent-primary)', 'var(--content-secondary)')}
+                    </div>
+                    <div>
+                      <div className="text-xs mb-2 uppercase tracking-wider" style={{ color: 'var(--border-default)', ...sgFont }}>Subnet Mask</div>
+                      {renderOctets(ipToBin(calc.mask), calc.prefix, 'var(--accent-hover)', 'var(--border-default)')}
+                    </div>
+                    <div className="relative h-6 mt-1">
+                      <div className="absolute top-1/2 left-0 w-full h-px" style={{ background: 'var(--border-subtle)' }} />
+                      <div className="absolute top-0 bottom-0 w-0.5 shadow-md"
+                        style={{ left: `calc(${(calc.prefix / 32) * 100}%)`, background: 'var(--accent-hover)', boxShadow: '0 0 8px rgba(183,109,255,0.4)' }} />
+                      <span className="absolute top-0 text-xs font-mono"
+                        style={{ left: `calc(${(calc.prefix / 32) * 100}% + 8px)`, color: 'var(--accent-hover)', ...sgFont, fontSize: 10 }}>
+                        Network | Host
+                      </span>
                     </div>
                   </div>
-                  <div>
-                    <div className="text-xs text-content-secondary uppercase tracking-widest font-bold">Total Usable Hosts</div>
-                    <div className="text-2xl font-bold text-content-primary">{calc.hosts.toLocaleString()}</div>
-                  </div>
-                  
-                  <div className="mt-auto pt-4 border-t border-border-subtle">
-                    <button 
-                      onClick={handleSplit}
-                      disabled={prefixInput >= 30}
-                      className="flex items-center gap-2 w-full justify-center bg-accent-primary/20 hover:bg-accent-primary/30 text-accent-primary disabled:opacity-50 border border-indigo-500/30 px-4 py-2 rounded-lg transition-colors"
-                    >
-                      <SplitSquareHorizontal className="w-5 h-5" />
-                      Split Subnet (+1 bit)
-                    </button>
-                    <p className="text-xs text-center text-content-muted mt-2">
-                       Splitting creates two child subnets each with half the hosts.
-                    </p>
-                  </div>
                 </div>
+              </>
+            ) : (
+              <div className="glass-panel rounded-xl flex items-center justify-center p-16 text-center"
+                style={{ color: 'var(--content-muted)', ...sgFont }}>
+                Please enter a valid IPv4 address to calculate subnet details.
               </div>
-            </div>
-          ) : (
-            <div className="p-8 text-center bg-surface-panel/50 rounded-2xl border border-border-subtle text-content-secondary">
-              Please enter a valid IPv4 address.
-            </div>
-          )}
-
+            )}
+          </div>
         </div>
       </main>
     </div>

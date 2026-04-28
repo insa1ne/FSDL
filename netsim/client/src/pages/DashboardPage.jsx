@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import { Network, Plus, Trash2, Clock, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Trash2, Loader2, RefreshCw } from 'lucide-react';
+import Sidebar from '../components/Sidebar';
 import api from '../api/axios';
 import useSimulatorStore from '../store/useSimulatorStore';
 
@@ -12,23 +12,38 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetch saved topologies from the backend on mount
-  useEffect(() => {
-    const fetchTopologies = async () => {
-      try {
-        const res = await api.get('/topologies');
-        setTopologies(res.data);
-      } catch (err) {
-        setError('Failed to load topologies.');
-      } finally {
-        setLoading(false);
+  const fetchTopologies = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await api.get('/topologies');
+      setTopologies(res.data);
+    } catch (err) {
+      if (err.response?.status === 401) {
+        setError('Session expired. Please sign in again.');
+      } else if (err.code === 'ERR_NETWORK') {
+        setError('Cannot reach server. Make sure the backend is running on port 3001.');
+      } else {
+        setError(err.response?.data?.message || 'Failed to load topologies.');
       }
-    };
-    fetchTopologies();
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  // Fetch on mount
+  useEffect(() => {
+    fetchTopologies();
+  }, [fetchTopologies]);
+
+  // Re-fetch whenever the user focuses this tab/window (e.g. after saving in simulator)
+  useEffect(() => {
+    const onFocus = () => fetchTopologies();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [fetchTopologies]);
+
   const loadTopology = (topology) => {
-    // Parse the JSON and load into Zustand store, then navigate to simulator
     try {
       const nodes = JSON.parse(topology.nodesJson);
       const edges = JSON.parse(topology.edgesJson);
@@ -36,13 +51,13 @@ const DashboardPage = () => {
       store.loadTopology(nodes, edges, topology.id, topology.name);
       navigate('/simulator');
     } catch (err) {
-      // If JSON parsing fails, just go to simulator
       navigate('/simulator');
     }
   };
 
   const deleteTopology = async (e, id) => {
     e.stopPropagation();
+    if (!window.confirm('Delete this topology?')) return;
     try {
       await api.delete('/topologies/' + id);
       setTopologies((prev) => prev.filter((t) => t.id !== id));
@@ -51,7 +66,6 @@ const DashboardPage = () => {
     }
   };
 
-  // Helper to format date
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     const now = new Date();
@@ -59,102 +73,196 @@ const DashboardPage = () => {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return diffMins + ' min ago';
-    if (diffHours < 24) return diffHours + ' hour' + (diffHours > 1 ? 's' : '') + ' ago';
-    if (diffDays < 7) return diffDays + ' day' + (diffDays > 1 ? 's' : '') + ' ago';
+    if (diffHours < 24) return diffHours + 'h ago';
+    if (diffDays < 7) return diffDays + 'd ago';
     return date.toLocaleDateString();
   };
 
-  // Determine topology type from nodes
-  const getTopologyInfo = (topology) => {
-    try {
-      const nodes = JSON.parse(topology.nodesJson);
-      return { nodesCount: nodes.length };
-    } catch {
-      return { nodesCount: 0 };
-    }
+  const getNodeCount = (topology) => {
+    try { return JSON.parse(topology.nodesJson).length; }
+    catch { return 0; }
   };
 
+  const sgFont = { fontFamily: "'Space Grotesk', sans-serif" };
+
   return (
-    <div className="flex bg-surface-root min-h-screen">
+    <div className="flex min-h-screen" style={{ background: 'transparent' }}>
       <Sidebar />
-      
-      <main className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-5xl mx-auto">
-          
-          <header className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-content-primary mb-2">Saved Topologies</h1>
-              <p className="text-content-secondary">Manage and load your previously designed networks.</p>
-            </div>
-            <button 
-              onClick={() => navigate('/simulator')}
-              className="flex items-center gap-2 bg-accent-primary hover:bg-indigo-500 text-content-primary px-5 py-2.5 rounded-lg shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all font-medium"
+
+      <main className="flex-1 p-16" style={{ marginLeft: 256 }}>
+        {/* Header */}
+        <header className="mb-12 flex items-end justify-between">
+          <div>
+            <h2 className="text-3xl font-semibold mb-1"
+              style={{ ...sgFont, color: 'var(--content-primary)', letterSpacing: '-0.02em' }}>
+              Saved Topologies
+            </h2>
+            <p className="text-sm" style={{ color: 'var(--content-secondary)' }}>
+              {loading ? 'Loading…' : `${topologies.length} topology${topologies.length !== 1 ? 's' : ''} saved`}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            {/* Refresh */}
+            <button
+              onClick={fetchTopologies}
+              disabled={loading}
+              className="glass-panel px-4 py-2 rounded flex items-center gap-2 text-sm transition-all hover:opacity-80 disabled:opacity-50"
+              style={{ color: 'var(--content-primary)', ...sgFont }}
             >
-              <Plus className="w-5 h-5" />
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+            {/* Go to simulator */}
+            <button
+              onClick={() => navigate('/simulator')}
+              className="btn-primary-gradient px-5 py-2 rounded flex items-center gap-2 text-sm text-white"
+              style={sgFont}>
+              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>
               New Topology
             </button>
-          </header>
+          </div>
+        </header>
 
-          {error && (
-            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm text-center">
-              {error}
+        {/* Error state */}
+        {error && (
+          <div className="mb-8 p-4 rounded-xl border flex items-start gap-3"
+            style={{
+              background: 'rgba(255,180,171,0.06)',
+              borderColor: 'rgba(255,180,171,0.2)',
+              color: '#ffb4ab',
+            }}>
+            <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: 18 }}>error</span>
+            <div>
+              <p className="text-sm font-medium" style={sgFont}>{error}</p>
+              <button onClick={fetchTopologies}
+                className="text-xs mt-1 underline underline-offset-2 opacity-70 hover:opacity-100"
+                style={sgFont}>
+                Try again
+              </button>
             </div>
-          )}
+          </div>
+        )}
 
-          {loading ? (
-            <div className="flex flex-col items-center justify-center p-16">
-              <Loader2 className="w-10 h-10 text-accent-primary animate-spin mb-4" />
-              <p className="text-content-secondary">Loading your topologies...</p>
-            </div>
-          ) : topologies.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-16 border border-dashed border-border-subtle rounded-2xl bg-surface-panel/50">
-              <Network className="w-16 h-16 text-slate-600 mb-4" />
-              <h3 className="text-xl font-medium text-content-primary mb-2">No topologies yet</h3>
-              <p className="text-content-secondary">Head over to the simulator to create your first design.</p>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {topologies.map((top, idx) => {
-                const info = getTopologyInfo(top);
-                return (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    key={top.id}
-                    className="bg-surface-panel border border-border-subtle rounded-2xl p-5 hover:border-indigo-500/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-all group cursor-pointer"
-                    onClick={() => loadTopology(top)}
-                  >
-                    <div className="w-12 h-12 rounded-lg bg-surface-card flex items-center justify-center text-accent-primary mb-4 group-hover:scale-110 transition-transform">
-                      <Network className="w-6 h-6" />
-                    </div>
-                    <h3 className="text-lg font-bold text-content-primary mb-1">{top.name}</h3>
-                    <div className="flex items-center gap-4 text-sm text-content-secondary mb-4">
-                      <span>{info.nodesCount} Nodes</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between border-t border-border-subtle pt-4 mt-auto">
-                      <div className="flex items-center gap-1.5 text-xs text-content-muted">
-                        <Clock className="w-3.5 h-3.5" />
-                        {formatDate(top.updatedAt)}
-                      </div>
-                      <button 
-                        onClick={(e) => deleteTopology(e, top.id)}
-                        className="text-content-muted hover:text-red-400 transition-colors p-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
+        {/* Loading */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-32">
+            <Loader2 className="w-10 h-10 animate-spin mb-4" style={{ color: 'var(--accent-primary)' }} />
+            <p style={{ color: 'var(--content-secondary)', ...sgFont }}>Fetching your topologies…</p>
+          </div>
+        ) : !error && topologies.length === 0 ? (
+          /* Empty state */
+          <div
+            className="glass-panel rounded-xl border-dashed flex flex-col items-center justify-center py-28 cursor-pointer transition-all"
+            style={{ borderColor: 'var(--border-default)', borderStyle: 'dashed' }}
+            onClick={() => navigate('/simulator')}
+            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-hover)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-default)'}
+          >
+            <span className="material-symbols-outlined mb-4 text-4xl" style={{ color: 'var(--border-default)', fontSize: 36 }}>lan</span>
+            <h3 className="text-lg font-semibold mb-2" style={{ ...sgFont, color: 'var(--content-primary)' }}>No topologies yet</h3>
+            <p className="text-sm text-center max-w-xs mb-6" style={{ color: 'var(--content-muted)' }}>
+              Go to the simulator, build a network, then click <strong style={{ color: 'var(--accent-primary)' }}>Save</strong> to see it here.
+            </p>
+            <button className="btn-primary-gradient px-6 py-2 rounded text-sm text-white" style={sgFont}>
+              Open Simulator →
+            </button>
+          </div>
+        ) : (
+          /* Topology grid */
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {topologies.map((top, idx) => (
+              <motion.div
+                key={top.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.07 }}
+                className="glass-panel card-hover-glow rounded-xl overflow-hidden cursor-pointer"
+                onClick={() => loadTopology(top)}
+              >
+                {/* Card banner */}
+                <div className="h-24 relative flex items-center justify-center overflow-hidden"
+                  style={{ background: 'var(--surface-card)', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <div className="absolute inset-0"
+                    style={{ background: 'linear-gradient(to bottom right, rgba(183,109,255,0.12), transparent)' }} />
+                  <span className="material-symbols-outlined relative z-10"
+                    style={{ fontSize: 32, color: 'var(--accent-primary)', fontVariationSettings: "'FILL' 1" }}>lan</span>
+                </div>
 
-        </div>
+                {/* Card body */}
+                <div className="p-5">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-semibold text-base mb-1" style={{ ...sgFont, color: 'var(--content-primary)' }}>{top.name}</h3>
+                      <p className="text-xs font-mono" style={{ color: 'var(--border-default)' }}>
+                        #{top.id}
+                      </p>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full text-xs uppercase tracking-wider border"
+                      style={{
+                        background: 'rgba(183,109,255,0.1)',
+                        color: 'var(--accent-primary)',
+                        borderColor: 'rgba(183,109,255,0.2)',
+                        ...sgFont,
+                      }}>
+                      Active
+                    </span>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="p-2.5 rounded-lg" style={{ background: 'var(--surface-card)' }}>
+                      <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--border-default)', ...sgFont }}>Nodes</p>
+                      <p className="text-sm font-mono font-semibold" style={{ color: 'var(--content-primary)' }}>{getNodeCount(top)}</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg" style={{ background: 'var(--surface-card)' }}>
+                      <p className="text-xs uppercase tracking-wider mb-1" style={{ color: 'var(--border-default)', ...sgFont }}>Saved</p>
+                      <p className="text-sm font-mono" style={{ color: 'var(--content-primary)' }}>{formatDate(top.updatedAt)}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <button
+                      className="flex-1 py-2 rounded flex items-center justify-center gap-2 text-sm border transition-all"
+                      style={{ ...sgFont, color: 'var(--content-primary)', background: 'var(--surface-hover)', borderColor: 'var(--border-subtle)' }}
+                      onClick={(e) => { e.stopPropagation(); loadTopology(top); }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(183,109,255,0.4)'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-subtle)'}>
+                      <span className="material-symbols-outlined" style={{ fontSize: 16 }}>play_arrow</span>
+                      Open
+                    </button>
+                    <button
+                      onClick={(e) => deleteTopology(e, top.id)}
+                      className="p-2 rounded border transition-all"
+                      style={{ background: 'var(--surface-hover)', borderColor: 'var(--border-subtle)', color: 'var(--content-muted)' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#ffb4ab'; e.currentTarget.style.borderColor = 'rgba(255,180,171,0.3)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = 'var(--content-muted)'; e.currentTarget.style.borderColor = 'var(--border-subtle)'; }}>
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+
+            {/* Add new card */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: topologies.length * 0.07 }}
+              className="glass-panel rounded-xl border-dashed flex flex-col items-center justify-center py-16 cursor-pointer transition-all"
+              style={{ borderColor: 'var(--border-default)', borderStyle: 'dashed', minHeight: 260 }}
+              onClick={() => navigate('/simulator')}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-hover)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-default)'}
+            >
+              <span className="material-symbols-outlined mb-3" style={{ color: 'var(--border-default)', fontSize: 28 }}>add</span>
+              <h3 className="font-semibold mb-1" style={{ ...sgFont, color: 'var(--content-primary)' }}>New Topology</h3>
+              <p className="text-xs text-center px-6" style={{ color: 'var(--content-muted)' }}>Start from scratch in the simulator</p>
+            </motion.div>
+          </div>
+        )}
       </main>
     </div>
   );

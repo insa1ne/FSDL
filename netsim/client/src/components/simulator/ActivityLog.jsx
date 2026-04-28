@@ -1,118 +1,145 @@
-import React, { useRef } from 'react';
-import { Trash2, X } from 'lucide-react';
+import React, { useRef, useEffect } from 'react';
+import { Trash2 } from 'lucide-react';
 import useSimulatorStore from '../../store/useSimulatorStore';
-import useThemeStore from '../../store/useThemeStore';
+
+// Stitch-style: terminal log matching the Network Log panel from simulator.html
+// Colors: outline-variant timestamps, secondary/primary/error prefixes
 
 const logColors = {
-  info:    { dot: '#3b82f6', text: 'var(--content-secondary)', bg: 'transparent' },
-  success: { dot: '#22c55e', text: '#16a34a',                  bg: 'transparent' },
-  warning: { dot: '#f59e0b', text: '#b45309',                  bg: 'transparent' },
-  error:   { dot: '#ef4444', text: '#dc2626',                  bg: 'transparent' },
+  info:    { prefix: '[SYS]',    prefixColor: 'var(--accent-hover)', textColor: 'var(--content-muted)' },
+  success: { prefix: '[INFO]',   prefixColor: 'var(--accent-primary)', textColor: 'var(--content-secondary)' },
+  warning: { prefix: '[WARN]',   prefixColor: '#fcd34d', textColor: 'var(--content-secondary)' },
+  error:   { prefix: '[CRIT]',   prefixColor: '#ffb4ab', textColor: '#ffb4ab' },
 };
 
-/* In dark mode the text colors are brighter */
-const logColorsDark = {
-  info:    { dot: '#3b82f6', text: '#93c5fd', bg: 'transparent' },
-  success: { dot: '#22c55e', text: '#86efac', bg: 'transparent' },
-  warning: { dot: '#f59e0b', text: '#fcd34d', bg: 'transparent' },
-  error:   { dot: '#ef4444', text: '#fca5a5', bg: 'transparent' },
-};
-
-const getLogColors = (type) => {
-  // deprecated static helper — replaced by reactive logic inside component
-  return logColors[type] || logColors.info;
-};
-
-const logPrefixes = {
-  info: 'ℹ',
-  success: '✓',
-  warning: '⚠',
-  error: '✕',
-};
-
-export default function ActivityLog({ height = 160 }) {
+export default function ActivityLog({ height = 192 }) {
   const { activityLog, clearLog } = useSimulatorStore();
   const listRef = useRef(null);
-  const theme = useThemeStore((s) => s.theme);
-  const logColorMap = theme === 'dark' ? logColorsDark : logColors;
+
+  // Auto-scroll to bottom on new logs
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
+  }, [activityLog]);
 
   return (
     <div style={{
       height,
-      background: 'var(--surface-root)',
-      borderTop: '1px solid var(--surface-card)',
       display: 'flex',
       flexDirection: 'column',
       flexShrink: 0,
+      background: 'var(--panel-bg)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      borderTop: '1px solid var(--border-subtle)',
     }}>
-      {/* Header */}
+      {/* Header — matches Stitch's "Network Log" header */}
       <div style={{
-        padding: '6px 14px',
+        padding: '6px 16px',
         background: 'var(--surface-panel)',
-        borderBottom: '1px solid var(--surface-card)',
+        borderBottom: '1px solid var(--border-subtle)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--content-muted)', letterSpacing: 1, textTransform: 'uppercase' }}>
-            Activity Log
+          <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--content-muted)' }}>terminal</span>
+          <span style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: 'var(--content-primary)',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            fontFamily: "'Space Grotesk', sans-serif",
+          }}>
+            Network Log
           </span>
-          <span style={{ fontSize: 10, color: 'var(--border-default)', background: 'var(--surface-card)', padding: '1px 6px', borderRadius: 10 }}>
+          <span style={{
+            fontSize: 10,
+            color: 'var(--content-muted)',
+            background: 'var(--surface-card)',
+            border: '1px solid var(--border-default)',
+            padding: '1px 7px',
+            borderRadius: 99,
+            fontFamily: "'Space Grotesk', sans-serif",
+          }}>
             {activityLog.length}
           </span>
         </div>
-        <button
-          onClick={clearLog}
-          title="Clear log"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--border-default)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, padding: 2 }}
-        >
-          <Trash2 size={11} /> Clear
-        </button>
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button
+            onClick={clearLog}
+            title="Clear log"
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--content-muted)', display: 'flex', alignItems: 'center', gap: 4,
+              fontSize: 11, padding: '2px 6px', borderRadius: 5,
+              transition: 'color 0.15s',
+              fontFamily: "'Space Grotesk', sans-serif",
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--content-primary)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--content-muted)'}
+          >
+            <Trash2 size={12} /> Clear
+          </button>
+        </div>
       </div>
 
-      {/* Log entries */}
+      {/* Log scroll area */}
       <div
         ref={listRef}
         style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '4px 0',
-          fontFamily: 'monospace',
+          padding: '8px 0',
+          fontFamily: "'Space Grotesk', monospace",
         }}
       >
         {activityLog.length === 0 ? (
-          <div style={{ padding: '12px 14px', fontSize: 11, color: 'var(--border-default)', fontStyle: 'italic' }}>
-            No activity yet. Generate a topology or add a device.
+          <div style={{ padding: '10px 16px', fontSize: 12, color: 'var(--border-default)', fontStyle: 'italic' }}>
+            Simulation engine ready. Add devices or generate a topology.
           </div>
         ) : (
           activityLog.map((entry) => {
-            const c = logColorMap[entry.type] || logColorMap.info;
+            const c = logColors[entry.type] || logColors.info;
             return (
               <div
                 key={entry.id}
                 style={{
-                  padding: '3px 14px',
+                  padding: '3px 16px',
                   display: 'flex',
                   alignItems: 'flex-start',
-                  gap: 8,
-                  fontSize: 11,
+                  gap: 12,
+                  fontSize: 12,
+                  lineHeight: 1.6,
                 }}
               >
-                <span style={{ color: 'var(--border-default)', flexShrink: 0, paddingTop: 1, fontSize: 10 }}>
+                <span style={{ color: 'var(--border-default)', flexShrink: 0, minWidth: 60, fontFamily: 'monospace', fontSize: 11 }}>
                   {entry.time}
                 </span>
-                <span style={{ color: c.dot, fontWeight: 700, flexShrink: 0, paddingTop: 1 }}>
-                  {logPrefixes[entry.type]}
+                <span style={{ color: c.prefixColor, fontWeight: 700, flexShrink: 0, fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {c.prefix}
                 </span>
-                <span style={{ color: c.text, lineHeight: 1.4 }}>
+                <span style={{ color: c.textColor }}>
                   {entry.message}
                 </span>
               </div>
             );
           })
         )}
+        {/* Blinking cursor */}
+        <div style={{ padding: '2px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ color: 'var(--border-default)', minWidth: 60, fontFamily: 'monospace', fontSize: 11 }}>&nbsp;</span>
+          <span style={{
+            display: 'inline-block', width: 8, height: 14,
+            background: 'var(--accent-primary)',
+            animation: 'blink 1.1s step-end infinite',
+            verticalAlign: 'text-bottom',
+          }} />
+        </div>
+        <style>{`@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
       </div>
     </div>
   );

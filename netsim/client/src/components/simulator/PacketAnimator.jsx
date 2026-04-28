@@ -265,7 +265,7 @@ export default function PacketAnimator({ speed, src, dst, onComplete }) {
           top: 8,
           left: '50%',
           transform: 'translateX(-50%)',
-          background: 'rgba(15,23,42,0.92)',
+          background: 'var(--panel-bg)',
           border: '1px solid var(--border-default)',
           borderRadius: 8,
           padding: '5px 14px',
@@ -274,6 +274,7 @@ export default function PacketAnimator({ speed, src, dst, onComplete }) {
           fontFamily: 'monospace',
           boxShadow: '0 2px 12px rgba(0,0,0,0.5)',
           whiteSpace: 'nowrap',
+          backdropFilter: 'blur(8px)',
         }}>
           <span style={{ color: '#38bdf8' }}>
             {routeLabel.srcNode.data.ip || routeLabel.srcNode.data.label}

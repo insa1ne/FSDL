@@ -51,7 +51,7 @@ export default function SimulationEdge({
           d={edgePath}
           fill="transparent"
           strokeWidth={3}
-          stroke="#818cf8"
+          stroke={theme === 'dark' ? '#818cf8' : '#4f46e5'}
           strokeDasharray="6 4"
           style={{ animation: 'dash 1.2s linear infinite' }}
         />
@@ -74,8 +74,17 @@ export default function SimulationEdge({
               position: 'absolute',
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               pointerEvents: 'all',
+              padding: '2px 8px',
+              background: 'rgba(239, 68, 68, 0.15)',
+              border: '1px solid #ef4444',
+              borderRadius: '4px',
+              color: '#ef4444',
+              fontSize: '10px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              userSelect: 'none',
+              backdropFilter: 'blur(4px)'
             }}
-            className="px-2 py-1 bg-red-950 border border-red-500 rounded text-[10px] font-bold text-red-400 cursor-pointer select-none"
             onClick={() => toggleEdgeFailure(id)}
           >
             ⚠ LINK DOWN
