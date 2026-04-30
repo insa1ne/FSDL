@@ -22,7 +22,8 @@ const DashboardPage = () => {
       if (err.response?.status === 401) {
         setError('Session expired. Please sign in again.');
       } else if (err.code === 'ERR_NETWORK') {
-        setError('Cannot reach server. Make sure the backend is running on port 3001.');
+        // Backend may not be available in frontend-only deploys.
+        // setError('Cannot reach server. Make sure the backend is running on port 3001.');
       } else {
         setError(err.response?.data?.message || 'Failed to load topologies.');
       }
